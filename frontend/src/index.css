@@ -128,20 +128,36 @@
 }
 
 /* ===== User Location Pin ===== */
-.user-location-pin {
-  width: 20px;
-  height: 20px;
-  background: #3B82F6;
-  border: 3px solid white;
+.user-location-outer {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
-  animation: pulse-user 2s infinite;
+  background: rgba(37, 99, 235, 0.15);
+  animation: pulse-user-ring 2.2s ease-out infinite;
 }
 
-@keyframes pulse-user {
-  0%   { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
-  70%  { box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+.user-location-pin {
+  width: 14px;
+  height: 14px;
+  background: #2563EB;
+  border: 2.5px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.55);
+  flex-shrink: 0;
+}
+
+@keyframes pulse-user-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.3); }
+  60%  { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+/* ===== Place popup overrides ===== */
+.place-popup .leaflet-popup-content {
+  width: 232px !important;
 }
 
 /* ===== Spin Wheel ===== */

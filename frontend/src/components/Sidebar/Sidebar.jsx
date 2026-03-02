@@ -10,55 +10,64 @@ export default function Sidebar() {
   const hasActiveFilters = filters.type_id || filters.min_rating || filters.max_distance || filters.search;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white">
       {/* Header */}
-      <div className="px-4 pt-4 pb-2 flex-shrink-0">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">🗺️</span>
+      <div className="px-4 pt-4 pb-3 flex-shrink-0" style={{ borderBottom: '1px solid #f3f4f6' }}>
+        <div className="flex items-center justify-between mb-3">
           <div>
-            <h1 className="font-bold text-gray-900 text-sm leading-tight">Quanh FPT Đà Nẵng</h1>
-            <p className="text-xs text-gray-400">Trong bán kính 7km</p>
+            <h1 className="font-bold text-gray-900 text-[15px] leading-tight">Quanh FPT Đà Nẵng</h1>
+            <p className="text-[11px] text-gray-400 mt-0.5 font-medium">
+              Bán kính&nbsp;
+              <span className="text-fpt-orange font-semibold">7km</span>
+              &nbsp;·&nbsp;
+              {loading
+                ? <span className="text-gray-300">Đang tải…</span>
+                : <span>{places.length} địa điểm</span>
+              }
+            </p>
           </div>
+          {hasActiveFilters && (
+            <button
+              onClick={resetFilters}
+              className="text-[11px] text-fpt-orange font-semibold px-2.5 py-1 rounded-lg hover:bg-fpt-light transition-colors"
+            >
+              Xoá lọc
+            </button>
+          )}
         </div>
         <SearchBar />
       </div>
 
       <FilterPanel />
 
-      {/* Result summary */}
-      <div className="px-4 py-2 flex items-center justify-between flex-shrink-0 border-b">
-        <span className="text-xs text-gray-500">
-          {loading ? 'Đang tải...' : `${places.length} địa điểm`}
-        </span>
-        {hasActiveFilters && (
-          <button
-            onClick={resetFilters}
-            className="text-xs text-fpt-orange hover:underline font-medium"
-          >
-            Xoá bộ lọc
-          </button>
-        )}
-      </div>
-
       {/* Place list */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="flex items-center justify-center py-16">
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
             <LoadingSpinner />
+            <p className="text-xs text-gray-400">Đang tải địa điểm…</p>
           </div>
         ) : places.length === 0 ? (
-          <div className="text-center py-16 px-4 text-gray-400">
-            <div className="text-4xl mb-2">🔍</div>
-            <p className="font-medium text-sm">Không tìm thấy địa điểm</p>
-            <p className="text-xs mt-1">Thử điều chỉnh bộ lọc nhé!</p>
+          <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center text-3xl mb-3">🔍</div>
+            <p className="font-semibold text-gray-700 text-sm">Không tìm thấy địa điểm</p>
+            <p className="text-xs text-gray-400 mt-1 leading-relaxed">Thử thay đổi bộ lọc hoặc từ khoá tìm kiếm nhé!</p>
+            {hasActiveFilters && (
+              <button
+                onClick={resetFilters}
+                className="mt-4 text-xs text-fpt-orange font-semibold px-4 py-2 rounded-xl border border-orange-200 hover:bg-fpt-light transition-colors"
+              >
+                Xoá tất cả bộ lọc
+              </button>
+            )}
           </div>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div>
             {places.map((place, i) => (
               <PlaceCard
                 key={place.id}
                 place={place}
-                style={{ animationDelay: `${i * 40}ms` }}
+                style={{ animationDelay: `${i * 30}ms` }}
               />
             ))}
           </div>

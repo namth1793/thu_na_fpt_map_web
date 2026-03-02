@@ -40,10 +40,14 @@ function createFPTIcon() {
 function createUserIcon() {
   return L.divIcon({
     className: '',
-    html: `<div class="user-location-pin"></div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
-    popupAnchor: [0, -14],
+    html: `
+      <div class="user-location-outer">
+        <div class="user-location-pin"></div>
+      </div>
+    `,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -20],
   });
 }
 
@@ -53,8 +57,8 @@ function renderStars(rating) {
 }
 
 function formatRouteDist(meters) {
-  if (meters < 1000) return `${Math.round(meters)}m`;
-  return `${(meters / 1000).toFixed(1)}km`;
+  if (meters < 1000) return `${Math.round(meters)} m`;
+  return `${(meters / 1000).toFixed(1)} km`;
 }
 
 function formatRouteDuration(seconds) {
@@ -63,9 +67,74 @@ function formatRouteDuration(seconds) {
   if (mins < 60) return `${mins} phút`;
   const h = Math.floor(mins / 60);
   const m = mins % 60;
-  return m > 0 ? `${h} giờ ${m} phút` : `${h} giờ`;
+  return m > 0 ? `${h}g ${m}p` : `${h} giờ`;
 }
 
+// ─── Popup HTML builder ───────────────────────────────────────────────────────
+function buildPopupHTML(place) {
+  const color = place.type_color || '#6B7280';
+  const rating = place.avg_rating?.toFixed(1) || '0.0';
+  const dist = formatDistance(place.distance_from_fpt);
+
+  return `
+    <div style="font-family:'Be Vietnam Pro',sans-serif;width:232px">
+      <!-- Header -->
+      <div
+        style="background:${color};padding:12px 14px 10px;cursor:pointer;position:relative"
+        onclick="window.__navigateToPlace('${place.id}')"
+      >
+        <div style="font-weight:700;font-size:14px;color:#fff;line-height:1.3;padding-right:8px">${place.name}</div>
+        <div style="margin-top:4px;display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,0.18);border-radius:20px;padding:2px 8px">
+          <span style="font-size:11px">${place.type_icon || ''}</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.9);font-weight:500">${place.type_name || ''}</span>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div style="padding:12px 14px">
+        <!-- Rating row -->
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          <span style="font-size:12px;letter-spacing:-1px">${renderStars(place.avg_rating)}</span>
+          <span style="font-size:13px;font-weight:700;color:#111827">${rating}</span>
+          <span style="font-size:11px;color:#9CA3AF">(${place.total_reviews} đánh giá)</span>
+        </div>
+
+        <!-- Address -->
+        <div style="display:flex;align-items:flex-start;gap:5px;margin-bottom:4px">
+          <span style="font-size:11px;color:#9CA3AF;margin-top:1px;flex-shrink:0">📍</span>
+          <span style="font-size:11px;color:#6B7280;line-height:1.4">${place.address || 'Chưa có địa chỉ'}</span>
+        </div>
+
+        <!-- Distance from FPT -->
+        <div style="display:inline-flex;align-items:center;gap:4px;background:#FFF3EE;border-radius:20px;padding:3px 10px;margin-bottom:10px">
+          <span style="font-size:11px">🎓</span>
+          <span style="font-size:11px;color:#F05A22;font-weight:600">${dist} từ FPT</span>
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+          <div
+            onclick="window.__navigateToPlace('${place.id}')"
+            style="text-align:center;background:#F05A22;color:#fff;border-radius:10px;padding:7px 4px;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s"
+            onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"
+          >
+            Chi tiết →
+          </div>
+          <div
+            onclick="window.__startRoute('${place.id}')"
+            style="text-align:center;background:#2563EB;color:#fff;border-radius:10px;padding:7px 4px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;transition:opacity .15s"
+            onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+            Dẫn đường
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function MapView() {
   const navigate = useNavigate();
   const { places, selectedPlace, setSelectedPlace } = usePlaces();
@@ -79,193 +148,166 @@ export default function MapView() {
   const geoWatchRef = useRef(null);
   const placesDataRef = useRef({});
 
-  const [routeInfo, setRouteInfo] = useState(null); // { distance, duration, mode, placeName, placeCoords }
+  const [routeInfo, setRouteInfo] = useState(null);
   const [toast, setToast] = useState(null);
   const [loadingRoute, setLoadingRoute] = useState(false);
 
   const showToast = useCallback((msg, type = 'error') => {
     setToast({ msg, type });
-    setTimeout(() => setToast(null), 3500);
+    setTimeout(() => setToast(null), 4000);
   }, []);
 
-  // --- Fetch route from OSRM ---
+  // ── Fetch route via OSRM ──────────────────────────────────────────────────
   const fetchRoute = useCallback(async (userCoords, placeCoords, mode, placeName) => {
     const map = mapInstanceRef.current;
     if (!map) return;
 
     setLoadingRoute(true);
-
-    // Remove old route
-    if (routeLayerRef.current) {
-      routeLayerRef.current.remove();
-      routeLayerRef.current = null;
-    }
+    if (routeLayerRef.current) { routeLayerRef.current.remove(); routeLayerRef.current = null; }
 
     try {
-      const [userLat, userLng] = userCoords;
-      const [placeLat, placeLng] = placeCoords;
-      // OSRM uses [lng, lat] order in the URL
-      const url = `https://router.project-osrm.org/route/v1/${mode}/${userLng},${userLat};${placeLng},${placeLat}?overview=full&geometries=geojson`;
+      const [uLat, uLng] = userCoords;
+      const [pLat, pLng] = placeCoords;
+      const url = `https://router.project-osrm.org/route/v1/${mode}/${uLng},${uLat};${pLng},${pLat}?overview=full&geometries=geojson`;
 
       const res = await fetch(url);
       if (!res.ok) throw new Error('OSRM error');
       const data = await res.json();
-
-      if (!data.routes || data.routes.length === 0) throw new Error('No route');
+      if (!data.routes?.length) throw new Error('No route');
 
       const route = data.routes[0];
-      // OSRM returns [lng, lat] — swap to [lat, lng] for Leaflet
+      // OSRM → [lng,lat], Leaflet needs [lat,lng]
       const latlngs = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
 
-      const color = mode === 'foot' ? '#10B981' : '#3B82F6';
-      const weight = mode === 'foot' ? 4 : 5;
-      const dashArray = mode === 'foot' ? '8 6' : null;
-
+      const isDriving = mode === 'driving';
       const polyline = L.polyline(latlngs, {
-        color,
-        weight,
+        color: isDriving ? '#2563EB' : '#059669',
+        weight: isDriving ? 5 : 4,
         opacity: 0.85,
-        dashArray,
+        dashArray: isDriving ? null : '10 6',
         lineJoin: 'round',
+        lineCap: 'round',
       }).addTo(map);
 
       routeLayerRef.current = polyline;
-      map.fitBounds(polyline.getBounds(), { padding: [60, 60] });
+      map.fitBounds(polyline.getBounds(), { padding: [70, 70] });
 
-      setRouteInfo({
-        distance: route.distance,
-        duration: route.duration,
-        mode,
-        placeName,
-        placeCoords,
-      });
+      setRouteInfo({ distance: route.distance, duration: route.duration, mode, placeName, placeCoords });
     } catch {
-      showToast('Không thể tải tuyến đường. Vui lòng thử lại.');
+      showToast('Không thể tải tuyến đường. Vui lòng thử lại sau.');
     } finally {
       setLoadingRoute(false);
     }
   }, [showToast]);
 
-  // --- Clear route ---
   const clearRoute = useCallback(() => {
-    if (routeLayerRef.current) {
-      routeLayerRef.current.remove();
-      routeLayerRef.current = null;
-    }
+    if (routeLayerRef.current) { routeLayerRef.current.remove(); routeLayerRef.current = null; }
     setRouteInfo(null);
   }, []);
 
-  // --- Toggle route mode ---
-  const toggleRouteMode = useCallback(() => {
-    if (!routeInfo || !userCoordsRef.current) return;
-    const newMode = routeInfo.mode === 'driving' ? 'foot' : 'driving';
-    fetchRoute(userCoordsRef.current, routeInfo.placeCoords, newMode, routeInfo.placeName);
+  const switchMode = useCallback((mode) => {
+    if (!routeInfo || routeInfo.mode === mode || !userCoordsRef.current) return;
+    fetchRoute(userCoordsRef.current, routeInfo.placeCoords, mode, routeInfo.placeName);
   }, [routeInfo, fetchRoute]);
 
-  // --- Init map ---
+  // ── Init map ─────────────────────────────────────────────────────────────
   useEffect(() => {
     if (mapInstanceRef.current) return;
 
-    const map = L.map(mapRef.current, {
-      center: FPT_COORDS,
-      zoom: 14,
-      zoomControl: false,
-    });
+    const map = L.map(mapRef.current, { center: FPT_COORDS, zoom: 14, zoomControl: false });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19,
     }).addTo(map);
 
-    // Zoom controls (top right)
     L.control.zoom({ position: 'topright' }).addTo(map);
 
-    // "My Location" button (custom Leaflet control)
+    // ── My Location button ──
     const LocateControl = L.Control.extend({
       options: { position: 'topright' },
       onAdd() {
-        const btn = L.DomUtil.create('button', 'leaflet-bar leaflet-control');
-        btn.title = 'Vị trí của tôi';
+        const wrap = L.DomUtil.create('div', 'leaflet-bar leaflet-control locate-btn-wrap');
+        wrap.style.cssText = 'margin-top:4px';
+        const btn = L.DomUtil.create('button', '', wrap);
+        btn.title = 'Về vị trí của tôi';
         btn.style.cssText = [
-          'width:34px', 'height:34px', 'background:#fff', 'border:none',
-          'cursor:pointer', 'font-size:18px', 'display:flex',
-          'align-items:center', 'justify-content:center',
-          'box-shadow:0 1px 5px rgba(0,0,0,0.25)', 'border-radius:4px',
+          'width:34px', 'height:34px', 'border:none', 'cursor:pointer',
+          'background:#fff', 'display:flex', 'align-items:center', 'justify-content:center',
+          'border-radius:4px', 'padding:0',
         ].join(';');
-        btn.innerHTML = '📍';
-        L.DomEvent.on(btn, 'click', L.DomEvent.stopPropagation);
+        btn.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+            <circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/>
+          </svg>
+        `;
+        L.DomEvent.disableClickPropagation(wrap);
         L.DomEvent.on(btn, 'click', () => {
           if (userCoordsRef.current) {
-            map.flyTo(userCoordsRef.current, 16, { duration: 0.8 });
+            map.flyTo(userCoordsRef.current, 17, { duration: 0.9 });
           } else {
             navigator.geolocation?.getCurrentPosition(
-              (pos) => map.flyTo([pos.coords.latitude, pos.coords.longitude], 16),
+              (p) => map.flyTo([p.coords.latitude, p.coords.longitude], 17),
               () => {}
             );
           }
         });
-        return btn;
+        return wrap;
       },
     });
     new LocateControl().addTo(map);
 
-    // FPT University marker
+    // FPT marker
     const fptMarker = L.marker(FPT_COORDS, { icon: createFPTIcon(), zIndexOffset: 1000 }).addTo(map);
     fptMarker.bindPopup(`
-      <div style="padding:12px;font-family:'Be Vietnam Pro',sans-serif">
-        <div style="font-weight:700;font-size:14px;color:#F05A22">🎓 Đại học FPT Đà Nẵng</div>
-        <div style="font-size:12px;color:#6B7280;margin-top:4px">Khu đô thị FPT City, Ngũ Hành Sơn</div>
-        <div style="font-size:11px;color:#9CA3AF;margin-top:4px">Trung tâm bán kính 7km</div>
+      <div style="padding:14px 16px;font-family:'Be Vietnam Pro',sans-serif">
+        <div style="font-weight:700;font-size:14px;color:#F05A22;margin-bottom:4px">🎓 Đại học FPT Đà Nẵng</div>
+        <div style="font-size:12px;color:#6B7280">Khu đô thị FPT City, Ngũ Hành Sơn</div>
+        <div style="margin-top:6px;display:inline-flex;align-items:center;gap:4px;background:#FFF3EE;border-radius:20px;padding:2px 8px">
+          <span style="font-size:11px;color:#F05A22;font-weight:500">📍 Trung tâm bán kính 7km</span>
+        </div>
       </div>
-    `, { maxWidth: 200 });
+    `, { maxWidth: 220 });
 
     // 7km radius circle
     radiusCircleRef.current = L.circle(FPT_COORDS, {
       radius: MAX_RADIUS_KM * 1000,
-      color: '#F05A22',
-      fillColor: '#F05A22',
-      fillOpacity: 0.04,
-      weight: 1.5,
-      dashArray: '6 4',
+      color: '#F05A22', fillColor: '#F05A22',
+      fillOpacity: 0.04, weight: 1.5, dashArray: '6 4',
     }).addTo(map);
 
     mapInstanceRef.current = map;
 
-    // --- Geolocation watch ---
+    // ── Geolocation watch ──
     if (navigator.geolocation) {
       geoWatchRef.current = navigator.geolocation.watchPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
+        ({ coords: { latitude, longitude } }) => {
           const coords = [latitude, longitude];
           userCoordsRef.current = coords;
 
           if (!userMarkerRef.current) {
-            userMarkerRef.current = L.marker(coords, {
-              icon: createUserIcon(),
-              zIndexOffset: 900,
-            }).addTo(map);
-            userMarkerRef.current.bindPopup(
-              `<div style="padding:10px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;color:#3B82F6">📍 Vị trí của bạn</div>`,
-              { maxWidth: 160 }
-            );
+            userMarkerRef.current = L.marker(coords, { icon: createUserIcon(), zIndexOffset: 900 }).addTo(map);
+            userMarkerRef.current.bindPopup(`
+              <div style="padding:10px 14px;font-family:'Be Vietnam Pro',sans-serif">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="width:10px;height:10px;background:#2563EB;border-radius:50%;flex-shrink:0"></div>
+                  <span style="font-size:13px;font-weight:600;color:#1D4ED8">Vị trí của bạn</span>
+                </div>
+                <div style="font-size:11px;color:#9CA3AF;margin-top:3px">Đang cập nhật theo thời gian thực</div>
+              </div>
+            `, { maxWidth: 180 });
           } else {
             userMarkerRef.current.setLatLng(coords);
           }
         },
-        (err) => {
-          if (err.code === 1) {
-            // Permission denied — notify once via a custom event so React state can show it
-            window.dispatchEvent(new CustomEvent('geo-denied'));
-          }
-        },
+        (err) => { if (err.code === 1) window.dispatchEvent(new CustomEvent('geo-denied')); },
         { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
       );
     }
 
     return () => {
-      if (geoWatchRef.current != null) {
-        navigator.geolocation?.clearWatch(geoWatchRef.current);
-      }
+      if (geoWatchRef.current != null) navigator.geolocation?.clearWatch(geoWatchRef.current);
       map.remove();
       mapInstanceRef.current = null;
       userMarkerRef.current = null;
@@ -273,70 +315,35 @@ export default function MapView() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Listen for geo-denied event from inside useEffect
   useEffect(() => {
-    const handler = () => showToast('Vui lòng cho phép truy cập vị trí để sử dụng dẫn đường.', 'warn');
+    const handler = () => showToast('Vui lòng cho phép truy cập vị trí để dẫn đường.', 'warn');
     window.addEventListener('geo-denied', handler);
     return () => window.removeEventListener('geo-denied', handler);
   }, [showToast]);
 
-  // --- Update markers when places change ---
+  // ── Sync markers ──────────────────────────────────────────────────────────
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    // Remove old markers
     Object.values(markersRef.current).forEach(m => m.remove());
     markersRef.current = {};
     placesDataRef.current = {};
 
     places.forEach(place => {
       placesDataRef.current[place.id] = place;
-
-      const icon = createPlaceIcon(place.type_color, place.type_icon);
-      const marker = L.marker([place.lat, place.lng], { icon }).addTo(map);
-
-      const popupContent = `
-        <div style="font-family:'Be Vietnam Pro',sans-serif">
-          <div style="background:${place.type_color || '#6B7280'};padding:10px 12px;color:white;cursor:pointer" onclick="window.__navigateToPlace('${place.id}')">
-            <div style="font-weight:700;font-size:14px">${place.name}</div>
-            <div style="font-size:11px;opacity:0.9;margin-top:2px">${place.type_icon || ''} ${place.type_name || ''}</div>
-          </div>
-          <div style="padding:10px 12px">
-            <div style="font-size:13px;color:#374151;margin-bottom:6px">${renderStars(place.avg_rating)} <b>${place.avg_rating?.toFixed(1) || '0.0'}</b> <span style="color:#9CA3AF;font-size:11px">(${place.total_reviews} đánh giá)</span></div>
-            <div style="font-size:12px;color:#6B7280">${place.address || ''}</div>
-            <div style="font-size:12px;color:#F05A22;margin-top:4px;font-weight:600">${formatDistance(place.distance_from_fpt)} từ FPT</div>
-            <div style="margin-top:8px;display:flex;gap:6px">
-              <div onclick="window.__navigateToPlace('${place.id}')" style="flex:1;text-align:center;background:#F05A22;color:white;border-radius:8px;padding:6px 4px;font-size:12px;font-weight:600;cursor:pointer">
-                Xem chi tiết →
-              </div>
-              <div onclick="window.__startRoute('${place.id}')" style="flex:1;text-align:center;background:#3B82F6;color:white;border-radius:8px;padding:6px 4px;font-size:12px;font-weight:600;cursor:pointer">
-                🧭 Dẫn đường
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      marker.bindPopup(popupContent, { maxWidth: 240, minWidth: 220 });
-
-      marker.on('click', () => {
-        setSelectedPlace(place);
-        map.flyTo([place.lat, place.lng], 16, { duration: 0.8 });
-      });
-
+      const marker = L.marker([place.lat, place.lng], { icon: createPlaceIcon(place.type_color, place.type_icon) }).addTo(map);
+      marker.bindPopup(buildPopupHTML(place), { maxWidth: 260, minWidth: 232, className: 'place-popup' });
+      marker.on('click', () => { setSelectedPlace(place); map.flyTo([place.lat, place.lng], 16, { duration: 0.8 }); });
       markersRef.current[place.id] = marker;
     });
 
-    // Global navigation handler from popup
     window.__navigateToPlace = (id) => navigate(`/place/${id}`);
-
-    // Global route handler from popup — calls fetchRoute stored on window to avoid stale closure
     window.__startRoute = (id) => {
       const place = placesDataRef.current[id];
       if (!place) return;
       if (!userCoordsRef.current) {
-        window.__showRouteToast('Đang xác định vị trí của bạn, vui lòng thử lại sau giây lát.');
+        window.__showRouteToast('Đang xác định vị trí, vui lòng thử lại sau giây lát.', 'warn');
         return;
       }
       mapInstanceRef.current?.closePopup();
@@ -344,81 +351,128 @@ export default function MapView() {
     };
   }, [places, navigate, setSelectedPlace]);
 
-  // Keep global fetchRoute reference up to date
   useEffect(() => {
     window.__fetchRouteGlobal = fetchRoute;
-    window.__showRouteToast = (msg) => showToast(msg, 'warn');
+    window.__showRouteToast = showToast;
   }, [fetchRoute, showToast]);
 
-  // --- Focus selected place ---
+  // ── Focus selected place ──────────────────────────────────────────────────
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !selectedPlace) return;
-
     const marker = markersRef.current[selectedPlace.id];
-    if (marker) {
-      map.flyTo([selectedPlace.lat, selectedPlace.lng], 16, { duration: 0.8 });
-      setTimeout(() => marker.openPopup(), 900);
-    }
+    if (marker) { map.flyTo([selectedPlace.lat, selectedPlace.lng], 16, { duration: 0.8 }); setTimeout(() => marker.openPopup(), 900); }
   }, [selectedPlace]);
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  const isDriving = routeInfo?.mode === 'driving';
 
   return (
     <div className="relative w-full h-full" style={{ minHeight: 400 }}>
       <div ref={mapRef} className="w-full h-full" />
 
-      {/* Toast notification */}
+      {/* ── Toast ── */}
       {toast && (
-        <div
-          className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] text-white text-sm px-4 py-2 rounded-xl shadow-lg animate-fade-in-up"
-          style={{ background: toast.type === 'warn' ? '#F59E0B' : '#EF4444', whiteSpace: 'nowrap' }}
-        >
-          {toast.msg}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1100] animate-fade-in-up pointer-events-none">
+          <div
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl shadow-lg text-white text-sm font-medium"
+            style={{ background: toast.type === 'warn' ? '#D97706' : '#DC2626', backdropFilter: 'blur(8px)' }}
+          >
+            <span className="text-base leading-none">{toast.type === 'warn' ? '⚠️' : '❌'}</span>
+            {toast.msg}
+          </div>
         </div>
       )}
 
-      {/* Loading route indicator */}
+      {/* ── Loading route ── */}
       {loadingRoute && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-blue-500 text-white text-sm px-4 py-2 rounded-xl shadow-lg flex items-center gap-2">
-          <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-          </svg>
-          Đang tải tuyến đường...
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1100] animate-fade-in-up pointer-events-none">
+          <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl shadow-lg bg-blue-600 text-white text-sm font-medium">
+            <svg className="animate-spin w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            Đang tính toán tuyến đường…
+          </div>
         </div>
       )}
 
-      {/* Route info panel */}
+      {/* ── Route info panel ── */}
       {routeInfo && !loadingRoute && (
         <div
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] bg-white rounded-2xl shadow-2xl px-4 py-3 flex items-center gap-3 animate-fade-in-up"
-          style={{ minWidth: 300, maxWidth: 'calc(100vw - 32px)' }}
+          className="absolute bottom-5 left-1/2 -translate-x-1/2 z-[1000] bg-white rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up"
+          style={{ width: 340, maxWidth: 'calc(100vw - 20px)' }}
         >
-          <div className="text-2xl flex-shrink-0">
-            {routeInfo.mode === 'foot' ? '🚶' : '🏍️'}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-xs text-gray-500 truncate">
-              Đến: <span className="font-semibold text-gray-700">{routeInfo.placeName}</span>
+          {/* Colored accent bar */}
+          <div style={{ height: 4, background: isDriving ? 'linear-gradient(90deg,#2563EB,#60A5FA)' : 'linear-gradient(90deg,#059669,#34D399)' }} />
+
+          <div className="px-4 pt-3 pb-4">
+            {/* Header row */}
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                  style={{ background: isDriving ? '#EFF6FF' : '#ECFDF5' }}
+                >
+                  {isDriving ? '🏍️' : '🚶'}
+                </div>
+                <div>
+                  <div className="text-[11px] text-gray-400 font-medium uppercase tracking-wide leading-none mb-0.5">Đang dẫn đường</div>
+                  <div className="text-sm font-semibold text-gray-800 leading-tight max-w-[180px] truncate">{routeInfo.placeName}</div>
+                </div>
+              </div>
+              <button
+                onClick={clearRoute}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0 -mt-0.5"
+                title="Đóng"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
             </div>
-            <div className="flex items-center gap-3 mt-0.5">
-              <span className="text-sm font-bold text-blue-600">📏 {formatRouteDist(routeInfo.distance)}</span>
-              <span className="text-sm font-bold text-green-600">⏱ {formatRouteDuration(routeInfo.duration)}</span>
+
+            {/* Stats row */}
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <div className="bg-blue-50 rounded-xl px-3 py-2.5 text-center">
+                <div className="text-[10px] text-blue-400 font-semibold uppercase tracking-wide mb-0.5">Khoảng cách</div>
+                <div className="text-base font-bold text-blue-700 leading-none">{formatRouteDist(routeInfo.distance)}</div>
+              </div>
+              <div className="bg-emerald-50 rounded-xl px-3 py-2.5 text-center">
+                <div className="text-[10px] text-emerald-500 font-semibold uppercase tracking-wide mb-0.5">Thời gian</div>
+                <div className="text-base font-bold text-emerald-700 leading-none">{formatRouteDuration(routeInfo.duration)}</div>
+              </div>
+            </div>
+
+            {/* Mode toggle */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => switchMode('driving')}
+                className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  isDriving
+                    ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                }`}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-2"/>
+                  <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
+                </svg>
+                Đi xe
+              </button>
+              <button
+                onClick={() => switchMode('foot')}
+                className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  !isDriving
+                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-200'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                }`}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="5" r="1"/><path d="m9 20 3-7 2 3 2-3 1 4M6 9l6 1 2-3"/>
+                </svg>
+                Đi bộ
+              </button>
             </div>
           </div>
-          <button
-            onClick={toggleRouteMode}
-            title={routeInfo.mode === 'driving' ? 'Chuyển sang đi bộ' : 'Chuyển sang đi xe'}
-            className="flex-shrink-0 bg-gray-100 hover:bg-gray-200 rounded-lg px-2 py-1 text-sm transition-colors"
-          >
-            {routeInfo.mode === 'driving' ? '🚶 Bộ' : '🚗 Xe'}
-          </button>
-          <button
-            onClick={clearRoute}
-            className="flex-shrink-0 text-gray-400 hover:text-gray-600 text-lg leading-none transition-colors"
-            title="Đóng dẫn đường"
-          >
-            ✕
-          </button>
         </div>
       )}
     </div>
