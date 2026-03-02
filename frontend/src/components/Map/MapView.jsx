@@ -400,77 +400,76 @@ export default function MapView() {
       {/* ── Route info panel ── */}
       {routeInfo && !loadingRoute && (
         <div
-          className="absolute bottom-5 left-1/2 -translate-x-1/2 z-[1000] bg-white rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up"
-          style={{ width: 340, maxWidth: 'calc(100vw - 20px)' }}
+          className="absolute z-[1000] bg-white shadow-2xl overflow-hidden animate-fade-in-up
+            left-3 right-3 bottom-[88px]
+            md:left-auto md:right-auto md:bottom-5 md:rounded-2xl md:-translate-x-1/2 md:left-1/2"
+          style={{ borderRadius: 16, maxWidth: 400 }}
         >
           {/* Colored accent bar */}
           <div style={{ height: 4, background: isDriving ? 'linear-gradient(90deg,#2563EB,#60A5FA)' : 'linear-gradient(90deg,#059669,#34D399)' }} />
 
-          <div className="px-4 pt-3 pb-4">
-            {/* Header row */}
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-2.5">
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                  style={{ background: isDriving ? '#EFF6FF' : '#ECFDF5' }}
-                >
-                  {isDriving ? '🏍️' : '🚶'}
-                </div>
-                <div>
-                  <div className="text-[11px] text-gray-400 font-medium uppercase tracking-wide leading-none mb-0.5">Đang dẫn đường</div>
-                  <div className="text-sm font-semibold text-gray-800 leading-tight max-w-[180px] truncate">{routeInfo.placeName}</div>
-                </div>
+          <div className="px-4 pt-3 pb-3">
+            {/* Header row — icon + tên + nút đóng */}
+            <div className="flex items-center gap-2.5 mb-2.5">
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                style={{ background: isDriving ? '#EFF6FF' : '#ECFDF5' }}
+              >
+                {isDriving ? '🏍️' : '🚶'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide leading-none mb-0.5">Đang dẫn đường</div>
+                <div className="text-sm font-semibold text-gray-800 leading-tight truncate">{routeInfo.placeName}</div>
               </div>
               <button
                 onClick={clearRoute}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0 -mt-0.5"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0"
                 title="Đóng"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
 
-            {/* Stats row */}
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className="bg-blue-50 rounded-xl px-3 py-2.5 text-center">
-                <div className="text-[10px] text-blue-400 font-semibold uppercase tracking-wide mb-0.5">Khoảng cách</div>
-                <div className="text-base font-bold text-blue-700 leading-none">{formatRouteDist(routeInfo.distance)}</div>
+            {/* Stats + mode toggle — hàng ngang compact trên mobile */}
+            <div className="flex items-center gap-2">
+              {/* Khoảng cách */}
+              <div className="flex-1 bg-blue-50 rounded-xl px-2.5 py-2 text-center">
+                <div className="text-[9px] text-blue-400 font-bold uppercase tracking-wide">Khoảng cách</div>
+                <div className="text-sm font-bold text-blue-700 leading-none mt-0.5">{formatRouteDist(routeInfo.distance)}</div>
               </div>
-              <div className="bg-emerald-50 rounded-xl px-3 py-2.5 text-center">
-                <div className="text-[10px] text-emerald-500 font-semibold uppercase tracking-wide mb-0.5">Thời gian</div>
-                <div className="text-base font-bold text-emerald-700 leading-none">{formatRouteDuration(routeInfo.duration)}</div>
+              {/* Thời gian */}
+              <div className="flex-1 bg-emerald-50 rounded-xl px-2.5 py-2 text-center">
+                <div className="text-[9px] text-emerald-500 font-bold uppercase tracking-wide">Thời gian</div>
+                <div className="text-sm font-bold text-emerald-700 leading-none mt-0.5">{formatRouteDuration(routeInfo.duration)}</div>
               </div>
-            </div>
-
-            {/* Mode toggle */}
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => switchMode('driving')}
-                className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  isDriving
-                    ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                }`}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-2"/>
-                  <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
-                </svg>
-                Đi xe
-              </button>
-              <button
-                onClick={() => switchMode('foot')}
-                className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  !isDriving
-                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-200'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                }`}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="5" r="1"/><path d="m9 20 3-7 2 3 2-3 1 4M6 9l6 1 2-3"/>
-                </svg>
-                Đi bộ
-              </button>
+              {/* Mode toggle — 2 nút nhỏ */}
+              <div className="flex flex-col gap-1 flex-shrink-0">
+                <button
+                  onClick={() => switchMode('driving')}
+                  title="Đi xe"
+                  className={`flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${
+                    isDriving ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-2"/>
+                    <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
+                  </svg>
+                  Xe
+                </button>
+                <button
+                  onClick={() => switchMode('foot')}
+                  title="Đi bộ"
+                  className={`flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${
+                    !isDriving ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="5" r="1"/><path d="m9 20 3-7 2 3 2-3 1 4M6 9l6 1 2-3"/>
+                  </svg>
+                  Bộ
+                </button>
+              </div>
             </div>
           </div>
         </div>
