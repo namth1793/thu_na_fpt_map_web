@@ -51,6 +51,7 @@ export const adminAPI = {
   getAllPlaces: () => api.get('/admin/places'),
   getAllReviews: () => api.get('/admin/reviews'),
   getAllUsers: () => api.get('/admin/users'),
+  importExcel: (formData) => api.post('/admin/import-excel', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 };
 
 export default api;

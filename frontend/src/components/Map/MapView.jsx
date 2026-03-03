@@ -214,7 +214,7 @@ export default function MapView() {
   useEffect(() => {
     if (mapInstanceRef.current) return;
 
-    const map = L.map(mapRef.current, { center: FPT_COORDS, zoom: 14, zoomControl: false });
+    const map = L.map(mapRef.current, { center: FPT_COORDS, zoom: 14, zoomControl: false, attributionControl: false });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',

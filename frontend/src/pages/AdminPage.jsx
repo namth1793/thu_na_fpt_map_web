@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BarChart2, MapPin, MessageSquare, Users, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
+import { BarChart2, MapPin, MessageSquare, Users, Plus, Trash2, Eye, EyeOff, FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
 import { adminAPI, placesAPI } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import StarRating from '../components/Common/StarRating';
@@ -31,6 +31,8 @@ export default function AdminPage() {
   const [form, setForm] = useState({ name: '', type_id: '1', lat: '', lng: '', address: '', phone: '', hours: '', description: '' });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
+  const [excelImporting, setExcelImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
 
   useEffect(() => {
     if (!user || !isAdmin) { navigate('/'); return; }
@@ -84,6 +86,26 @@ export default function AdminPage() {
       loadData();
     } catch (err) {
       alert(err.response?.data?.error || 'Lỗi');
+    }
+  }
+
+  async function handleImportExcel(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    e.target.value = '';
+    setExcelImporting(true);
+    setImportResult(null);
+    setMsg('');
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await adminAPI.importExcel(fd);
+      setImportResult(res.data);
+      if (res.data.imported > 0) loadData();
+    } catch (err) {
+      setMsg(err.response?.data?.error || 'Lỗi import Excel');
+    } finally {
+      setExcelImporting(false);
     }
   }
 
@@ -192,17 +214,48 @@ export default function AdminPage() {
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-bold text-gray-800">Tất cả địa điểm ({places.length})</h2>
-              <button
-                onClick={() => setShowAddForm(s => !s)}
-                className="flex items-center gap-2 bg-fpt-orange text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-fpt-dark transition-colors"
-              >
-                <Plus size={16} /> Thêm địa điểm
-              </button>
+              <div className="flex items-center gap-2">
+                <label className={`flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors cursor-pointer ${excelImporting ? 'opacity-60 cursor-not-allowed' : ''}`}>
+                  <FileSpreadsheet size={16} />
+                  {excelImporting ? 'Đang import...' : 'Import Excel'}
+                  <input type="file" accept=".xlsx,.xls" className="hidden" onChange={handleImportExcel} disabled={excelImporting} />
+                </label>
+                <button
+                  onClick={() => setShowAddForm(s => !s)}
+                  className="flex items-center gap-2 bg-fpt-orange text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-fpt-dark transition-colors"
+                >
+                  <Plus size={16} /> Thêm địa điểm
+                </button>
+              </div>
             </div>
 
             {msg && (
               <div className={`p-3 rounded-xl mb-4 text-sm font-medium ${msg.includes('thành công') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                 {msg}
+              </div>
+            )}
+
+            {importResult && (
+              <div className="bg-white rounded-2xl p-4 shadow-sm mb-4 border border-gray-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle size={16} className="text-green-600 flex-shrink-0" />
+                  <span className="text-sm font-semibold text-gray-800">
+                    Import thành công {importResult.imported}/{importResult.total} địa điểm
+                  </span>
+                  <button onClick={() => setImportResult(null)} className="ml-auto text-gray-400 hover:text-gray-600 text-xs">✕</button>
+                </div>
+                {importResult.skipped?.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-amber-700 mb-1">
+                      <AlertCircle size={13} /> {importResult.skipped.length} dòng bị bỏ qua:
+                    </div>
+                    {importResult.skipped.map((s, i) => (
+                      <div key={i} className="text-xs text-gray-500 bg-amber-50 rounded-lg px-3 py-1.5">
+                        Dòng {s.row} <span className="font-medium">{s.name}</span>: {s.reason}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
