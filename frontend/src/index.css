@@ -9,10 +9,10 @@
 }
 
 .leaflet-popup-content-wrapper {
-  border-radius: 14px !important;
+  border-radius: 16px !important;
   padding: 0 !important;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
   border: none !important;
 }
 
@@ -45,25 +45,56 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.22);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
-  border: 2px solid rgba(255,255,255,0.8);
+  border: 2px solid rgba(255,255,255,0.9);
 }
 
 .place-pin:hover {
   transform: rotate(-45deg) scale(1.2);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.32);
 }
 
 .place-pin .pin-emoji {
   transform: rotate(45deg);
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* Popular place pin — larger with gold ring */
+.place-pin-popular {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.28), 0 0 0 3px #F59E0B, 0 0 0 6px rgba(245,158,11,0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  border: 2.5px solid rgba(255,255,255,0.95);
+  animation: popular-pulse 3s ease-in-out infinite;
+}
+
+.place-pin-popular:hover {
+  transform: rotate(-45deg) scale(1.2);
+}
+
+.place-pin-popular .pin-emoji {
+  transform: rotate(45deg);
   font-size: 18px;
   line-height: 1;
+}
+
+@keyframes popular-pulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(0,0,0,0.28), 0 0 0 3px #F59E0B, 0 0 0 6px rgba(245,158,11,0.2); }
+  50% { box-shadow: 0 4px 20px rgba(0,0,0,0.32), 0 0 0 3px #F59E0B, 0 0 0 10px rgba(245,158,11,0.08); }
 }
 
 .fpt-pin {
@@ -85,11 +116,19 @@
   50% { box-shadow: 0 4px 28px rgba(240, 90, 34, 0.8), 0 0 0 8px rgba(240, 90, 34, 0.1); }
 }
 
+/* ===== Map cursor for admin add mode ===== */
+.map-add-mode {
+  cursor: crosshair !important;
+}
+.map-add-mode * {
+  cursor: crosshair !important;
+}
+
 /* ===== Scrollbar ===== */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: #f5f5f5; }
-::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
 
 /* ===== Animations ===== */
 @keyframes fadeInUp {
@@ -108,8 +147,14 @@
   100% { transform: translateY(-60px) scale(1); opacity: 0; }
 }
 
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 .animate-fade-in-up { animation: fadeInUp 0.35s ease forwards; }
 .animate-slide-in-right { animation: slideInRight 0.35s ease forwards; }
+.animate-scale-in { animation: scaleIn 0.2s ease forwards; }
 .contribution-pop { animation: contributionPop 1.5s ease forwards; }
 
 /* ===== Utilities ===== */
@@ -173,4 +218,30 @@
   border-top: 28px solid #F05A22;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
   z-index: 10;
+}
+
+/* ===== Professional card hover effects ===== */
+.card-hover {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card-hover:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+
+/* ===== Input focus ring ===== */
+.input-pro {
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+  background: #F8FAFC;
+}
+.input-pro:focus {
+  border-color: #F05A22;
+  box-shadow: 0 0 0 3px rgba(240,90,34,0.1);
+  background: #fff;
 }

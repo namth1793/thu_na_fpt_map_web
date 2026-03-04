@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Bookmark, BookmarkCheck } from 'lucide-react';
 import { usePlaces } from '../../context/PlaceContext';
+import { useAuth } from '../../context/AuthContext';
 import { formatDistance, walkingTime } from '../../utils/distance';
 
 function MiniStars({ value }) {
@@ -20,6 +21,10 @@ function MiniStars({ value }) {
 export default function PlaceCard({ place, style }) {
   const navigate = useNavigate();
   const { setSelectedPlace } = usePlaces();
+  const { user, savedPlaceIds, toggleSave } = useAuth();
+
+  const isSaved = savedPlaceIds.has(Number(place.id));
+  const isPopular = Boolean(place.is_popular);
 
   function handleClick() {
     setSelectedPlace(place);
@@ -30,13 +35,21 @@ export default function PlaceCard({ place, style }) {
     navigate(`/place/${place.id}`);
   }
 
+  async function handleBookmark(e) {
+    e.stopPropagation();
+    if (!user) { navigate('/'); return; }
+    try {
+      await toggleSave(place.id);
+    } catch {/* ignore */}
+  }
+
   const dist = formatDistance(place.distance_from_fpt);
   const walk = walkingTime(place.distance_from_fpt);
 
   return (
     <div
       onClick={handleClick}
-      className="group relative flex gap-3 px-4 py-3.5 cursor-pointer transition-all animate-fade-in-up hover:bg-gray-50 border-b border-gray-50 last:border-0"
+      className="group relative flex gap-3 px-4 py-3.5 cursor-pointer transition-all animate-fade-in-up hover:bg-slate-50 border-b border-slate-50 last:border-0"
       style={{
         ...style,
         boxShadow: 'inset 0 0 0 transparent',
@@ -64,6 +77,14 @@ export default function PlaceCard({ place, style }) {
             </div>
           )}
         </div>
+
+        {/* Popular badge */}
+        {isPopular && (
+          <div className="absolute -top-1.5 -left-1.5 bg-amber-400 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm leading-none z-10 flex items-center gap-0.5">
+            🔥 Hot
+          </div>
+        )}
+
         {/* Type corner badge */}
         <div
           className="absolute -bottom-1 -right-1 w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 border-white shadow-sm"
@@ -80,10 +101,19 @@ export default function PlaceCard({ place, style }) {
           <h3 className="font-semibold text-gray-900 text-[13px] leading-snug flex-1 line-clamp-2">
             {place.name}
           </h3>
-          <ChevronRight
-            size={15}
-            className="text-gray-200 group-hover:text-fpt-orange flex-shrink-0 mt-0.5 transition-colors"
-          />
+          {/* Bookmark button */}
+          {user && (
+            <button
+              onClick={handleBookmark}
+              className="flex-shrink-0 mt-0.5 p-0.5 rounded-md transition-colors hover:bg-orange-50"
+              title={isSaved ? 'Bỏ lưu' : 'Lưu địa điểm'}
+            >
+              {isSaved
+                ? <BookmarkCheck size={15} className="text-fpt-orange" />
+                : <Bookmark size={15} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
+              }
+            </button>
+          )}
         </div>
 
         {/* Rating row */}
@@ -95,7 +125,7 @@ export default function PlaceCard({ place, style }) {
           <span className="text-[11px] text-gray-400">({place.total_reviews})</span>
         </div>
 
-        {/* Distance + type */}
+        {/* Distance + detail link */}
         <div className="flex items-center justify-between gap-1">
           <span className="text-[11px] text-gray-400">
             {dist}&nbsp;·&nbsp;{walk}

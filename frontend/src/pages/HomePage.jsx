@@ -3,11 +3,15 @@ import { Map, List, Shuffle } from 'lucide-react';
 import MapView from '../components/Map/MapView';
 import Sidebar from '../components/Sidebar/Sidebar';
 import SpinWheel from '../components/SpinWheel/SpinWheel';
+import { useAuth } from '../context/AuthContext';
+import { usePlaces } from '../context/PlaceContext';
 
 export default function HomePage() {
+  const { isAdmin } = useAuth();
+  const { loadPlaces } = usePlaces();
   const [showSidebar, setShowSidebar] = useState(true);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
-  const [mobileView, setMobileView] = useState('map'); // 'map' | 'list'
+  const [mobileView, setMobileView] = useState('map');
 
   return (
     <div className="flex h-[calc(100vh-56px)] overflow-hidden relative">
@@ -22,8 +26,7 @@ export default function HomePage() {
         {showSidebar && <Sidebar />}
       </div>
 
-      {/* Sidebar - mobile (khi chọn list view)
-          pb-20 để nội dung không bị bottom nav che */}
+      {/* Sidebar - mobile */}
       {mobileView === 'list' && (
         <div className="md:hidden absolute inset-0 z-20 bg-white pb-20">
           <Sidebar />
@@ -32,7 +35,7 @@ export default function HomePage() {
 
       {/* Map container */}
       <div className={`flex-1 relative ${mobileView === 'list' ? 'hidden md:block' : 'block'}`}>
-        <MapView />
+        <MapView isAdmin={isAdmin} onPlaceAdded={loadPlaces} />
 
         {/* Toggle sidebar - desktop only */}
         <button
@@ -43,7 +46,7 @@ export default function HomePage() {
           {showSidebar ? '◀' : '▶'}
         </button>
 
-        {/* Spin wheel FAB - desktop only (mobile dùng bottom nav) */}
+        {/* Spin wheel FAB - desktop only */}
         <button
           onClick={() => setShowSpinWheel(true)}
           className="hidden md:flex absolute bottom-8 right-5 z-20 bg-gradient-to-r from-fpt-orange to-pink-500 text-white rounded-full px-5 py-3 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all items-center gap-2 font-semibold text-sm"
@@ -53,15 +56,12 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* Mobile bottom nav — nằm ngoài map container để luôn hiển thị
-          dù đang ở chế độ map hay list */}
+      {/* Mobile bottom nav */}
       <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex gap-2">
         <button
           onClick={() => setMobileView('map')}
           className={`px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 text-sm font-semibold transition-all ${
-            mobileView === 'map'
-              ? 'text-white'
-              : 'bg-white text-gray-600'
+            mobileView === 'map' ? 'text-white' : 'bg-white text-gray-600'
           }`}
           style={mobileView === 'map' ? { background: 'linear-gradient(135deg,#F05A22,#e04010)', boxShadow: '0 4px 16px rgba(240,90,34,0.35)' } : {}}
         >
@@ -70,9 +70,7 @@ export default function HomePage() {
         <button
           onClick={() => setMobileView('list')}
           className={`px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 text-sm font-semibold transition-all ${
-            mobileView === 'list'
-              ? 'text-white'
-              : 'bg-white text-gray-600'
+            mobileView === 'list' ? 'text-white' : 'bg-white text-gray-600'
           }`}
           style={mobileView === 'list' ? { background: 'linear-gradient(135deg,#F05A22,#e04010)', boxShadow: '0 4px 16px rgba(240,90,34,0.35)' } : {}}
         >

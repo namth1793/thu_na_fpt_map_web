@@ -26,7 +26,9 @@ router.get('/', optionalAuth, (req, res) => {
   const db = getDB();
 
   let query = `
-    SELECT p.*, pt.name as type_name, pt.color as type_color, pt.icon as type_icon, pt.slug as type_slug
+    SELECT p.*,
+      pt.name as type_name, pt.color as type_color, pt.icon as type_icon, pt.slug as type_slug,
+      CASE WHEN p.avg_rating >= 4.5 AND p.total_reviews >= 15 THEN 1 ELSE 0 END as is_popular
     FROM places p
     LEFT JOIN place_types pt ON p.type_id = pt.id
     WHERE p.is_active = 1
@@ -115,11 +117,49 @@ router.get('/random', (req, res) => {
   res.json(db.prepare(query).all(...params));
 });
 
+// Lấy địa điểm đã lưu của user
+router.get('/saved', authenticateToken, (req, res) => {
+  const db = getDB();
+  const saved = db.prepare(`
+    SELECT p.*,
+      pt.name as type_name, pt.color as type_color, pt.icon as type_icon, pt.slug as type_slug,
+      CASE WHEN p.avg_rating >= 4.5 AND p.total_reviews >= 15 THEN 1 ELSE 0 END as is_popular
+    FROM saved_places sp
+    JOIN places p ON p.id = sp.place_id
+    LEFT JOIN place_types pt ON p.type_id = pt.id
+    WHERE sp.user_id = ? AND p.is_active = 1
+    ORDER BY sp.created_at DESC
+  `).all(req.user.id);
+
+  const getImages = db.prepare('SELECT image_url FROM place_images WHERE place_id = ? LIMIT 3');
+  res.json(saved.map(p => ({ ...p, images: getImages.all(p.id).map(i => i.image_url) })));
+});
+
+// Lưu / bỏ lưu địa điểm (toggle)
+router.post('/:id/save', authenticateToken, (req, res) => {
+  const db = getDB();
+  const existing = db.prepare(
+    'SELECT id FROM saved_places WHERE user_id = ? AND place_id = ?'
+  ).get(req.user.id, req.params.id);
+
+  if (existing) {
+    db.prepare('DELETE FROM saved_places WHERE user_id = ? AND place_id = ?')
+      .run(req.user.id, req.params.id);
+    res.json({ saved: false });
+  } else {
+    db.prepare('INSERT INTO saved_places (user_id, place_id) VALUES (?, ?)')
+      .run(req.user.id, req.params.id);
+    res.json({ saved: true });
+  }
+});
+
 // Lấy chi tiết địa điểm
 router.get('/:id', optionalAuth, (req, res) => {
   const db = getDB();
   const place = db.prepare(`
-    SELECT p.*, pt.name as type_name, pt.color as type_color, pt.icon as type_icon, pt.slug as type_slug
+    SELECT p.*,
+      pt.name as type_name, pt.color as type_color, pt.icon as type_icon, pt.slug as type_slug,
+      CASE WHEN p.avg_rating >= 4.5 AND p.total_reviews >= 15 THEN 1 ELSE 0 END as is_popular
     FROM places p
     LEFT JOIN place_types pt ON p.type_id = pt.id
     WHERE p.id = ? AND p.is_active = 1
@@ -197,6 +237,16 @@ router.put('/:id', authenticateToken, requireAdmin, upload.array('images', 10), 
       distance_from_fpt = ?
     WHERE id = ?
   `).run(name, type_id, newLat, newLng, address, phone, hours, description, is_active, distance, req.params.id);
+
+  if (req.body.delete_images) {
+    try {
+      const toDelete = JSON.parse(req.body.delete_images);
+      if (Array.isArray(toDelete) && toDelete.length > 0) {
+        const delImg = db.prepare('DELETE FROM place_images WHERE place_id = ? AND image_url = ?');
+        toDelete.forEach(url => delImg.run(req.params.id, url));
+      }
+    } catch { /* ignore invalid JSON */ }
+  }
 
   if (req.files && req.files.length > 0) {
     const insertImg = db.prepare(

@@ -36,6 +36,8 @@ export const placesAPI = {
   create: (formData) => api.post('/places', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   update: (id, formData) => api.put(`/places/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   delete: (id) => api.delete(`/places/${id}`),
+  getSaved: () => api.get('/places/saved'),
+  toggleSave: (id) => api.post(`/places/${id}/save`),
 };
 
 export const reviewsAPI = {

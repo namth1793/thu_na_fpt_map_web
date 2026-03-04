@@ -103,6 +103,16 @@ function initDB() {
       FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE,
       FOREIGN KEY (user_id) REFERENCES users(id)
     );
+
+    CREATE TABLE IF NOT EXISTS saved_places (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      place_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE CASCADE,
+      UNIQUE(user_id, place_id)
+    );
   `);
 
   const typeCount = database.prepare('SELECT COUNT(*) as count FROM place_types').get();

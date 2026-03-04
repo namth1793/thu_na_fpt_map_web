@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Phone, Clock, Star, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Clock, Star, Image as ImageIcon, Bookmark, BookmarkCheck } from 'lucide-react';
 import { placesAPI, reviewsAPI } from '../utils/api';
 import { formatDistance, drivingTime, walkingTime } from '../utils/distance';
 import StarRating from '../components/Common/StarRating';
@@ -13,7 +13,7 @@ import { useAuth } from '../context/AuthContext';
 export default function PlaceDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, savedPlaceIds, toggleSave } = useAuth();
 
   const [place, setPlace] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -24,6 +24,9 @@ export default function PlaceDetailPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showContrib, setShowContrib] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
+  const [savingBookmark, setSavingBookmark] = useState(false);
+
+  const isSaved = savedPlaceIds.has(Number(id));
 
   useEffect(() => { loadData(); }, [id]);
   useEffect(() => { loadReviews(); }, [reviewSort]);
@@ -68,6 +71,13 @@ export default function PlaceDetailPage() {
     placesAPI.getById(id).then(r => setPlace(r.data));
   }
 
+  async function handleBookmark() {
+    if (!user) { setShowAuthModal(true); return; }
+    setSavingBookmark(true);
+    try { await toggleSave(id); } catch {/* ignore */}
+    setSavingBookmark(false);
+  }
+
   if (loading) return (
     <div className="flex items-center justify-center h-screen bg-gray-50">
       <LoadingSpinner />
@@ -76,6 +86,7 @@ export default function PlaceDetailPage() {
   if (!place) return null;
 
   const allImages = place.images?.map(i => i.image_url) || [];
+  const isPopular = Boolean(place.is_popular);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -90,13 +101,25 @@ export default function PlaceDetailPage() {
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/30" />
 
-        {/* Back button */}
-        <div className="absolute top-4 left-4 z-10">
+        {/* Back + Bookmark */}
+        <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm text-white px-3 py-2 rounded-full text-sm font-medium hover:bg-black/50 transition-colors"
           >
             <ArrowLeft size={15} /> Quay lại
+          </button>
+          <button
+            onClick={handleBookmark}
+            disabled={savingBookmark}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all backdrop-blur-sm disabled:opacity-60"
+            style={{ background: isSaved ? 'rgba(240,90,34,0.85)' : 'rgba(0,0,0,0.3)', color: '#fff' }}
+            title={isSaved ? 'Bỏ lưu' : 'Lưu địa điểm'}
+          >
+            {isSaved
+              ? <><BookmarkCheck size={15} /><span className="ml-1">Đã lưu</span></>
+              : <><Bookmark size={15} /><span className="ml-1">Lưu lại</span></>
+            }
           </button>
         </div>
 
@@ -130,12 +153,19 @@ export default function PlaceDetailPage() {
 
         {/* Bottom bar */}
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 flex items-end justify-between">
-          <span
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-xs font-semibold backdrop-blur-sm"
-            style={{ background: `${place.type_color || '#6B7280'}CC` }}
-          >
-            {place.type_icon}&nbsp;{place.type_name}
-          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-xs font-semibold backdrop-blur-sm"
+              style={{ background: `${place.type_color || '#6B7280'}CC` }}
+            >
+              {place.type_icon}&nbsp;{place.type_name}
+            </span>
+            {isPopular && (
+              <span className="inline-flex items-center gap-1 bg-amber-400 text-white text-xs font-bold px-2.5 py-1.5 rounded-full shadow-sm">
+                🔥 Nổi tiếng
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1.5">
             <Star size={13} className="text-yellow-400 fill-yellow-400 flex-shrink-0" />
             <span className="text-white text-sm font-bold">{place.avg_rating?.toFixed(1) || '0.0'}</span>
@@ -147,7 +177,6 @@ export default function PlaceDetailPage() {
       <div className="max-w-3xl mx-auto px-4 py-5 space-y-4">
         {/* Info card */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden animate-fade-in-up">
-          {/* Name + quick stat pills */}
           <div className="px-5 pt-5 pb-4 border-b border-gray-50">
             <h1 className="text-xl font-bold text-gray-900 leading-tight mb-3">{place.name}</h1>
             <div className="flex flex-wrap gap-2">
@@ -168,7 +197,6 @@ export default function PlaceDetailPage() {
             </div>
           </div>
 
-          {/* Contact details */}
           <div className="px-5 py-4 space-y-3">
             {place.address && (
               <div className="flex items-start gap-3">
