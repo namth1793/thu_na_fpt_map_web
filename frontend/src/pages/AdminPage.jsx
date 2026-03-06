@@ -1,4 +1,4 @@
-import { AlertCircle, BarChart2, CheckCircle, Eye, EyeOff, FileSpreadsheet, ImagePlus, MapPin, MessageSquare, Pencil, Plus, Trash2, Users, X } from 'lucide-react';
+import { AlertCircle, BarChart2, CheckCircle, Eye, EyeOff, FileSpreadsheet, ImagePlus, MapPin, MessageSquare, Pencil, Plus, Search, Trash2, Users, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/Common/LoadingSpinner';
@@ -37,6 +37,9 @@ export default function AdminPage() {
   const [excelImporting, setExcelImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
   const imgInputRef = useRef(null);
+
+  // Edit state
+  const [placeSearch, setPlaceSearch] = useState('');
 
   // Edit state
   const [editingPlace, setEditingPlace] = useState(null);
@@ -319,9 +322,28 @@ export default function AdminPage() {
         {/* Places management */}
         {tab === 'places' && (
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="font-bold text-gray-800">Tất cả địa điểm ({places.length})</h2>
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+              <h2 className="font-bold text-gray-800 flex-shrink-0">
+                Địa điểm ({places.filter(p => {
+                  const q = placeSearch.toLowerCase();
+                  return !q || p.name.toLowerCase().includes(q) || (p.address || '').toLowerCase().includes(q);
+                }).length}/{places.length})
+              </h2>
+              <div className="relative flex-1 max-w-xs">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  value={placeSearch}
+                  onChange={e => setPlaceSearch(e.target.value)}
+                  placeholder="Tìm theo tên hoặc địa chỉ..."
+                  className="w-full pl-8 pr-3 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-fpt-orange focus:bg-white transition-colors"
+                />
+                {placeSearch && (
+                  <button onClick={() => setPlaceSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-2 sm:ml-auto">
                 <label className={`flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors cursor-pointer ${excelImporting ? 'opacity-60 cursor-not-allowed' : ''}`}>
                   <FileSpreadsheet size={16} />
                   {excelImporting ? 'Đang import...' : 'Import Excel'}
@@ -489,7 +511,10 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {places.map(p => (
+                    {places.filter(p => {
+                      const q = placeSearch.toLowerCase();
+                      return !q || p.name.toLowerCase().includes(q) || (p.address || '').toLowerCase().includes(q);
+                    }).map(p => (
                       <tr key={p.id} className={`hover:bg-slate-50 transition-colors ${!p.is_active ? 'opacity-50' : ''}`}>
                         <td className="px-4 py-3">
                           <div className="font-medium text-gray-900 text-sm">{p.name}</div>
