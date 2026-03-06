@@ -2,8 +2,9 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { X, MapPin, ImagePlus, MousePointerClick } from 'lucide-react';
+import { X, MapPin, ImagePlus, MousePointerClick, PenLine } from 'lucide-react';
 import { usePlaces } from '../../context/PlaceContext';
+import { useAuth } from '../../context/AuthContext';
 import { placesAPI } from '../../utils/api';
 import { FPT_COORDS, MAX_RADIUS_KM, formatDistance } from '../../utils/distance';
 
@@ -143,13 +144,13 @@ function buildPopupHTML(place) {
   `;
 }
 
-// ─── Admin Add Place Modal ─────────────────────────────────────────────────────
-function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPickFromMap }) {
+// ─── Add Place Modal ───────────────────────────────────────────────────────────
+function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPickFromMap, initialCoords }) {
   const [form, setForm] = useState({
     name: '',
     type_id: '1',
-    lat: '',
-    lng: '',
+    lat: initialCoords ? initialCoords.lat.toFixed(6) : '',
+    lng: initialCoords ? initialCoords.lng.toFixed(6) : '',
     address: '',
     phone: '',
     hours: '',
@@ -172,14 +173,14 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
     }
   }, [form.lat, form.lng, onPreviewCoords]);
 
-  // Receive coordinates from map click
+  // Receive coordinates from in-modal map pick
   useEffect(() => {
     const handler = (e) => {
       setForm(f => ({ ...f, lat: e.detail.lat.toFixed(6), lng: e.detail.lng.toFixed(6) }));
       setPickingFromMap(false);
     };
-    window.addEventListener('admin-map-pick', handler);
-    return () => window.removeEventListener('admin-map-pick', handler);
+    window.addEventListener('modal-map-pick', handler);
+    return () => window.removeEventListener('modal-map-pick', handler);
   }, []);
 
   function handlePickFromMap() {
@@ -278,7 +279,7 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
                 }`}
               >
                 <MousePointerClick size={13} />
-                {pickingFromMap ? 'Đang chờ click...' : 'Chọn trên bản đồ'}
+                {pickingFromMap ? 'Đang chờ click...' : 'Chọn lại trên bản đồ'}
               </button>
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -306,11 +307,11 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
             {coordsValid ? (
               <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-                Marker đang hiển thị trên bản đồ — kéo modal sang để kiểm tra
+                Marker đang hiển thị trên bản đồ
               </div>
             ) : (
               <div className="text-[11px] text-gray-400">
-                💡 Lấy tọa độ: Google Maps → chuột phải vào địa điểm → copy số đầu tiên (lat), số thứ hai (lng)
+                💡 Bấm "Chọn lại trên bản đồ" hoặc nhập tọa độ thủ công
               </div>
             )}
           </div>
@@ -387,6 +388,7 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
 // ─── MapView Component ────────────────────────────────────────────────────────
 export default function MapView({ isAdmin = false, onPlaceAdded }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { places, placeTypes, selectedPlace, setSelectedPlace } = usePlaces();
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -401,8 +403,16 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
   const [routeInfo, setRouteInfo] = useState(null);
   const [toast, setToast] = useState(null);
   const [loadingRoute, setLoadingRoute] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
+
+  // addStep: null | 'picker' | 'picking' | 'form'
+  const [addStep, setAddStep] = useState(null);
+  // pickedCoords: tọa độ chọn từ bản đồ trước khi mở form
+  const [pickedCoords, setPickedCoords] = useState(null);
+  // mapPickMode: chọn lại tọa độ trong lúc form đang mở
   const [mapPickMode, setMapPickMode] = useState(false);
+
+  const showAddModal = addStep === 'form';
+  const isPickingActive = addStep === 'picking' || mapPickMode;
 
   const showToast = useCallback((msg, type = 'error') => {
     setToast({ msg, type });
@@ -452,7 +462,7 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
     fetchRoute(userCoordsRef.current, routeInfo.placeCoords, mode, routeInfo.placeName);
   }, [routeInfo, fetchRoute]);
 
-  // ── Preview marker: updates as admin types lat/lng ─────────────────────────
+  // ── Preview marker ────────────────────────────────────────────────────────
   const handlePreviewCoords = useCallback((coords) => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -471,18 +481,27 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
     map.flyTo(coords, Math.max(map.getZoom(), 15), { duration: 0.6 });
   }, []);
 
-  // ── Map pick mode: click on map to get coordinates ─────────────────────────
+  // ── Map pick mode (pre-form picking + in-form re-picking) ─────────────────
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
     const container = map.getContainer();
-    if (mapPickMode) {
+
+    if (isPickingActive) {
       container.classList.add('map-add-mode');
       const handler = (e) => {
-        window.dispatchEvent(new CustomEvent('admin-map-pick', {
-          detail: { lat: e.latlng.lat, lng: e.latlng.lng },
-        }));
-        setMapPickMode(false);
+        const { lat, lng } = e.latlng;
+        if (addStep === 'picking') {
+          // Chọn trước khi mở form → lưu coords rồi mở form
+          setPickedCoords({ lat, lng });
+          setAddStep('form');
+        } else {
+          // Chọn lại trong khi form đang mở → dispatch event cho modal
+          window.dispatchEvent(new CustomEvent('modal-map-pick', {
+            detail: { lat, lng },
+          }));
+          setMapPickMode(false);
+        }
       };
       map.once('click', handler);
       return () => {
@@ -492,9 +511,9 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
     } else {
       container.classList.remove('map-add-mode');
     }
-  }, [mapPickMode]);
+  }, [addStep, isPickingActive]);
 
-  // Clean up preview marker when modal closes
+  // Clean up preview marker khi đóng form
   useEffect(() => {
     if (!showAddModal && previewMarkerRef.current) {
       previewMarkerRef.current.remove();
@@ -644,11 +663,18 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
   }, [selectedPlace]);
 
   function handlePlaceAdded(newPlace) {
-    setShowAddModal(false);
+    setAddStep(null);
+    setPickedCoords(null);
     if (onPlaceAdded) onPlaceAdded(newPlace);
     showToast(`Đã thêm "${newPlace.name}" lên bản đồ!`, 'success');
     const map = mapInstanceRef.current;
     if (map) map.flyTo([newPlace.lat, newPlace.lng], 16, { duration: 1 });
+  }
+
+  function closeAddFlow() {
+    setAddStep(null);
+    setPickedCoords(null);
+    setMapPickMode(false);
   }
 
   const isDriving = routeInfo?.mode === 'driving';
@@ -657,20 +683,65 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
     <div className="relative w-full h-full" style={{ minHeight: 400 }}>
       <div ref={mapRef} className="w-full h-full" />
 
-      {/* ── Admin: Add Place FAB ── */}
-      {isAdmin && (
+      {/* ── FAB: Thêm địa điểm (hiện khi đã đăng nhập) ── */}
+      {user && (
         <button
-          onClick={() => setShowAddModal(true)}
-          className="absolute bottom-8 left-5 z-[1000] flex items-center gap-2 px-4 py-2.5 rounded-full shadow-xl text-sm font-semibold bg-white text-gray-700 hover:bg-orange-50 hover:text-fpt-orange border border-gray-200 hover:border-fpt-orange transition-all"
+          onClick={() => setAddStep(s => s === 'picker' ? null : 'picker')}
+          className={`absolute bottom-8 left-5 z-[1000] flex items-center gap-2 px-4 py-2.5 rounded-full shadow-xl text-sm font-semibold transition-all border ${
+            addStep === 'picker'
+              ? 'bg-fpt-orange text-white border-fpt-orange'
+              : 'bg-white text-gray-700 hover:bg-orange-50 hover:text-fpt-orange border-gray-200 hover:border-fpt-orange'
+          }`}
           title="Thêm địa điểm lên bản đồ"
         >
-          <MapPin size={16} className="text-fpt-orange" />
+          <MapPin size={16} className={addStep === 'picker' ? 'text-white' : 'text-fpt-orange'} />
           Thêm địa điểm
         </button>
       )}
 
+      {/* ── Option picker popup ── */}
+      {addStep === 'picker' && (
+        <>
+          {/* Backdrop để đóng picker khi click ngoài */}
+          <div className="absolute inset-0 z-[999]" onClick={() => setAddStep(null)} />
+          {/* Menu popup */}
+          <div className="absolute bottom-20 left-5 z-[1001] bg-white rounded-2xl shadow-2xl border border-gray-100 w-64 overflow-hidden animate-scale-in">
+            <div className="px-4 pt-3 pb-1">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Chọn cách nhập vị trí</p>
+            </div>
+            {/* Option 1: tự nhập tọa độ */}
+            <button
+              onClick={() => { setPickedCoords(null); setAddStep('form'); }}
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50 text-left transition-colors group"
+            >
+              <div className="w-9 h-9 rounded-xl bg-orange-100 group-hover:bg-fpt-orange flex items-center justify-center flex-shrink-0 transition-colors">
+                <PenLine size={16} className="text-fpt-orange group-hover:text-white transition-colors" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-800">Tự nhập tọa độ</div>
+                <div className="text-xs text-gray-400">Điền Lat/Lng thủ công trong form</div>
+              </div>
+            </button>
+            {/* Option 2: chọn trên bản đồ trước rồi mới điền form */}
+            <button
+              onClick={() => setAddStep('picking')}
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 text-left transition-colors group border-t border-gray-50"
+            >
+              <div className="w-9 h-9 rounded-xl bg-blue-100 group-hover:bg-blue-500 flex items-center justify-center flex-shrink-0 transition-colors">
+                <MousePointerClick size={16} className="text-blue-500 group-hover:text-white transition-colors" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-800">Chọn trên bản đồ</div>
+                <div className="text-xs text-gray-400">Nhấp vào vị trí, form tự điền tọa độ</div>
+              </div>
+            </button>
+            <div className="h-2" />
+          </div>
+        </>
+      )}
+
       {/* Map pick hint */}
-      {mapPickMode && (
+      {isPickingActive && (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[1100] pointer-events-none animate-fade-in-up">
           <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg bg-amber-500 text-white text-sm font-semibold">
             <MousePointerClick size={16} /> Nhấp vào bản đồ để lấy tọa độ
@@ -764,14 +835,15 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
         </div>
       )}
 
-      {/* ── Admin Add Place Modal ── */}
+      {/* ── Add Place Modal ── */}
       {showAddModal && (
         <AddPlaceModal
           placeTypes={placeTypes}
-          onClose={() => { setShowAddModal(false); setMapPickMode(false); }}
+          onClose={closeAddFlow}
           onSuccess={handlePlaceAdded}
           onPreviewCoords={handlePreviewCoords}
           onPickFromMap={setMapPickMode}
+          initialCoords={pickedCoords}
         />
       )}
     </div>

@@ -196,7 +196,7 @@ function seedData(database) {
     // ID 23
     ['Mì Quảng Bà Vị', 6, 15.9743, 108.2672, '5 Nguyễn Phan Vinh, Ngũ Hành Sơn, Đà Nẵng', null, '07:00 - 14:00', 'Mì Quảng đặc sản Đà Nẵng, nước nhân đậm vị, thịt gà + tôm tươi. Ăn kèm bánh tráng nướng mới đúng điệu. 35k/tô, sinh viên ăn được!', 4.5, 43, 1.2],
     // ID 24
-    ['Quán Nhậu Biển Xanh', 6, 15.9673, 108.2795, '200 Võ Nguyên Giáp, Ngũ Hành Sơn, Đà Nẵng', '0236 3999 555', '16:00 - 23:00', 'Nhậu nhẹ view biển buổi tối, hải sản tươi sống đặt theo kg. Ốc hương xào lăn và mực nướng là phải gọi. Giá hơi cao nhưng không khí chill vô đối!', 4.2, 37, 2.0],
+    ['Quán Nhậu Biển Xanh', 6, 15.9673, 108.2712, '200 Võ Nguyên Giáp, Ngũ Hành Sơn, Đà Nẵng', '0236 3999 555', '16:00 - 23:00', 'Nhậu nhẹ view biển buổi tối, hải sản tươi sống đặt theo kg. Ốc hương xào lăn và mực nướng là phải gọi. Giá hơi cao nhưng không khí chill vô đối!', 4.2, 37, 2.0],
     // ID 25
     ['Lẩu Hải Sản Trường Sa', 6, 15.9831, 108.2728, '88 Trường Sa, Ngũ Hành Sơn, Đà Nẵng', '0905 345 678', '11:00 - 22:00', 'Lẩu hải sản tươi đúng vị, nồi lớn ăn theo nhóm rất đã. Tôm hùm, ghẹ, ngao hấp sả ngon hết ý. Hay đặt bàn trước vì đông khách cuối tuần!', 4.3, 31, 2.8],
     // ID 26
@@ -212,7 +212,7 @@ function seedData(database) {
     // ID 30
     ['Phòng Game Net Speed', 7, 15.9722, 108.2538, '9 Nguyễn Đình Thi, Ngũ Hành Sơn, Đà Nẵng', '0905 678 901', '07:00 - 01:00', 'Net gaming tốc độ cao, máy i7 RTX, màn hình 144Hz. 10k/giờ gói thường, 15k gói VIP ghế massage. Có bán đồ ăn vặt và nước ngay tại chỗ!', 4.0, 16, 0.8],
     // ID 31
-    ['Pub & Beer Club Bờ Biển', 7, 15.9780, 108.2765, '350 Võ Nguyên Giáp, Ngũ Hành Sơn, Đà Nẵng', '0905 789 012', '18:00 - 02:00', 'Beer club ngay mép biển, nhạc live acoustic tối 3-4-5, DJ set cuối tuần. Không khí cực thoải mái, giá bia craft từ 40k. Hay rủ cả nhóm cuối tuần!', 4.4, 41, 2.5],
+    ['Pub & Beer Club Bờ Biển', 7, 15.9780, 108.2705, '350 Võ Nguyên Giáp, Ngũ Hành Sơn, Đà Nẵng', '0905 789 012', '18:00 - 02:00', 'Beer club ngay mép biển, nhạc live acoustic tối 3-4-5, DJ set cuối tuần. Không khí cực thoải mái, giá bia craft từ 40k. Hay rủ cả nhóm cuối tuần!', 4.4, 41, 2.5],
     // ID 32
     ['Karaoke Lucky Star', 2, 15.9841, 108.2518, '78 Lê Đức Thọ, Ngũ Hành Sơn, Đà Nẵng', '0905 111 777', '14:00 - 02:00', 'Phòng karaoke mới, màn hình LED 4K, 10.000+ bài hát cập nhật liên tục kể cả hit mới nhất. Có phòng mini cho 3-4 người giá rẻ hơn. Gọi nước tại phòng!', 4.3, 22, 2.5],
     // ID 33
@@ -230,7 +230,7 @@ function seedData(database) {
 
     // ── Check-in & Sống ảo ─────────────────────────────────────────────────
     // ID 38
-    ['Bãi Đá Ôm Biển Nước Mặn', 1, 15.9850, 108.2800, 'Bờ biển Nước Mặn, Ngũ Hành Sơn, Đà Nẵng', null, '05:00 - 20:00', 'Bãi đá tự nhiên hoang sơ, ít người biết, sóng vỗ đá cực ảo. Check-in buổi sáng sớm ánh nắng vàng rất đẹp. Đi giày bệt thôi vì đá trơn!', 4.4, 18, 3.4],
+    ['Bãi Đá Ôm Biển Nước Mặn', 1, 15.9850, 108.2748, 'Bờ biển Nước Mặn, Ngũ Hành Sơn, Đà Nẵng', null, '05:00 - 20:00', 'Bãi đá tự nhiên hoang sơ, ít người biết, sóng vỗ đá cực ảo. Check-in buổi sáng sớm ánh nắng vàng rất đẹp. Đi giày bệt thôi vì đá trơn!', 4.4, 18, 3.4],
     // ID 39
     ['Vườn Hoa Công Viên Hòa Hải', 1, 15.9848, 108.2590, 'Công viên Hòa Hải, Ngũ Hành Sơn, Đà Nẵng', null, '05:00 - 22:00', 'Công viên xanh mát, nhiều hoa đẹp theo mùa, có khu thể dục ngoài trời. Sáng sớm người già tập thể dục, chiều tối sinh viên ra hóng gió chill!', 4.1, 9, 1.7],
     // ID 40
@@ -292,7 +292,7 @@ function seedData(database) {
     // ID 64
     ['VR Game Zone', 7, 15.9846, 108.2509, '12 Lê Đức Thọ, Ngũ Hành Sơn, Đà Nẵng', '0905 888 222', '10:00 - 22:00', 'Trải nghiệm thực tế ảo VR: bắn súng, đua xe, roller coaster ảo. 50k/lượt 15 phút, nhiều game hay cho cả nhóm. Hay rủ bạn bè thử các game mới nhất!', 4.1, 18, 2.4],
     // ID 65
-    ['Mini Golf Bờ Biển', 7, 15.9760, 108.2755, '280 Võ Nguyên Giáp, Ngũ Hành Sơn, Đà Nẵng', '0905 777 333', '09:00 - 22:00', 'Sân golf mini 18 lỗ ngay cạnh biển, view đẹp, phù hợp hẹn hò hoặc đi nhóm. 60k/người chơi thoải mái. Chiều tối view sunset cực đẹp!', 4.2, 25, 2.0],
+    ['Mini Golf Bờ Biển', 7, 15.9760, 108.2700, '280 Võ Nguyên Giáp, Ngũ Hành Sơn, Đà Nẵng', '0905 777 333', '09:00 - 22:00', 'Sân golf mini 18 lỗ ngay cạnh biển, view đẹp, phù hợp hẹn hò hoặc đi nhóm. 60k/người chơi thoải mái. Chiều tối view sunset cực đẹp!', 4.2, 25, 2.0],
     // ID 66
     ['Kidzone Khu Vui Chơi Thiếu Nhi', 7, 15.9881, 108.2488, '8 Lê Đức Thọ, Ngũ Hành Sơn, Đà Nẵng', '0236 3800 111', '09:00 - 21:00', 'Khu vui chơi trong nhà, có cầu trượt, nhà banh, khu phân vai nghề nghiệp. Hay đi cùng gia đình hoặc dẫn em nhỏ. Điều hòa mát, cuối tuần đông vui!', 3.9, 14, 2.8],
     // ID 67
@@ -310,13 +310,13 @@ function seedData(database) {
 
     // ── Check-in & Sống ảo (thêm) ──────────────────────────────────────
     // ID 72
-    ['Bãi Biển Mỹ Khê', 1, 15.9991, 108.2792, 'Bãi biển Mỹ Khê, Ngũ Hành Sơn, Đà Nẵng', null, '05:00 - 22:00', 'Bãi biển nổi tiếng nhất Đà Nẵng, top 6 bãi biển đẹp nhất châu Á. Cát trắng mịn, nước trong xanh. Sáng sớm chụp bình minh đẹp xuất sắc!', 4.8, 120, 4.2],
+    ['Bãi Biển Mỹ Khê', 1, 15.9991, 108.2748, 'Bãi biển Mỹ Khê, Ngũ Hành Sơn, Đà Nẵng', null, '05:00 - 22:00', 'Bãi biển nổi tiếng nhất Đà Nẵng, top 6 bãi biển đẹp nhất châu Á. Cát trắng mịn, nước trong xanh. Sáng sớm chụp bình minh đẹp xuất sắc!', 4.8, 120, 4.2],
     // ID 73
     ['Làng Đá Mỹ Nghệ Non Nước', 1, 15.9795, 108.2680, 'Làng đá Non Nước, Ngũ Hành Sơn, Đà Nẵng', null, '07:00 - 18:00', 'Làng nghề điêu khắc đá cẩm thạch 400 năm tuổi. Xem nghệ nhân tạc tượng, mua quà lưu niệm. Góc chụp với tượng đá nghệ thuật rất đẹp!', 4.4, 57, 1.3],
     // ID 74
     ['Công Viên Đông Bắc View Núi', 1, 15.9920, 108.2610, 'Công viên Đông Bắc, Ngũ Hành Sơn, Đà Nẵng', null, '05:00 - 22:00', 'Công viên lớn view nhìn về phía núi Non Nước, hoa cỏ xanh mát. Sáng sớm nhiều người chạy bộ, chiều tối chill với đèn công viên lung linh!', 4.0, 18, 2.7],
     // ID 75
-    ['Ghềnh Đá Bãi Bụt', 1, 15.9960, 108.2830, 'Bãi Bụt, Sơn Trà, Đà Nẵng', null, '05:00 - 18:00', 'Ghềnh đá hoang sơ ít người biết, sóng vỗ ghềnh đá rất đẹp. Nước biển trong xanh thấy đáy, hay đến sáng sớm ánh vàng chụp ảnh nghệ!', 4.6, 32, 4.5],
+    ['Ghềnh Đá Bãi Bụt', 1, 15.9960, 108.2748, 'Bãi Bụt, Ngũ Hành Sơn, Đà Nẵng', null, '05:00 - 18:00', 'Ghềnh đá hoang sơ ít người biết, sóng vỗ ghềnh đá rất đẹp. Nước biển trong xanh thấy đáy, hay đến sáng sớm ánh vàng chụp ảnh nghệ!', 4.6, 32, 4.5],
 
     // ── Mua sắm (thêm) ────────────────────────────────────────────────
     // ID 76

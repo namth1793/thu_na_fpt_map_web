@@ -2,6 +2,7 @@ const express = require('express');
 const { getDB, updatePlaceRating } = require('../config/database');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const { getUploadedUrl } = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -98,7 +99,7 @@ router.post('/', authenticateToken, upload.array('images', 5), (req, res) => {
 
   if (req.files && req.files.length > 0) {
     const insertImg = db.prepare('INSERT INTO review_images (review_id, image_url) VALUES (?, ?)');
-    req.files.forEach(f => insertImg.run(reviewId, `/uploads/${f.filename}`));
+    req.files.forEach(f => insertImg.run(reviewId, getUploadedUrl(f)));
   }
 
   updatePlaceRating(db, place_id);

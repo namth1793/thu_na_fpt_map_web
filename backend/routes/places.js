@@ -2,6 +2,7 @@ const express = require('express');
 const { getDB } = require('../config/database');
 const { authenticateToken, requireAdmin, optionalAuth } = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const { getUploadedUrl } = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -174,8 +175,8 @@ router.get('/:id', optionalAuth, (req, res) => {
   res.json({ ...place, images });
 });
 
-// Thêm địa điểm (admin)
-router.post('/', authenticateToken, requireAdmin, upload.array('images', 10), (req, res) => {
+// Thêm địa điểm (user đã đăng nhập)
+router.post('/', authenticateToken, upload.array('images', 10), (req, res) => {
   const { name, type_id, lat, lng, address, phone, hours, description } = req.body;
 
   if (!name || !lat || !lng) {
@@ -199,9 +200,9 @@ router.post('/', authenticateToken, requireAdmin, upload.array('images', 10), (r
     const insertImg = db.prepare(
       'INSERT INTO place_images (place_id, image_url, uploaded_by) VALUES (?, ?, ?)'
     );
-    req.files.forEach(f => insertImg.run(placeId, `/uploads/${f.filename}`, req.user.id));
+    req.files.forEach(f => insertImg.run(placeId, getUploadedUrl(f), req.user.id));
     db.prepare('UPDATE places SET cover_image = ? WHERE id = ?')
-      .run(`/uploads/${req.files[0].filename}`, placeId);
+      .run(getUploadedUrl(req.files[0]), placeId);
   }
 
   const newPlace = db.prepare(`
@@ -252,7 +253,7 @@ router.put('/:id', authenticateToken, requireAdmin, upload.array('images', 10), 
     const insertImg = db.prepare(
       'INSERT INTO place_images (place_id, image_url, uploaded_by) VALUES (?, ?, ?)'
     );
-    req.files.forEach(f => insertImg.run(req.params.id, `/uploads/${f.filename}`, req.user.id));
+    req.files.forEach(f => insertImg.run(req.params.id, getUploadedUrl(f), req.user.id));
   }
 
   const updated = db.prepare(`
