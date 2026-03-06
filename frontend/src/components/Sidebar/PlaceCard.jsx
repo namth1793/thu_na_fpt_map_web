@@ -3,6 +3,7 @@ import { ChevronRight, Bookmark, BookmarkCheck } from 'lucide-react';
 import { usePlaces } from '../../context/PlaceContext';
 import { useAuth } from '../../context/AuthContext';
 import { formatDistance, walkingTime } from '../../utils/distance';
+import { getImageUrl } from '../../utils/api';
 
 function MiniStars({ value }) {
   const full = Math.round(value || 0);
@@ -66,7 +67,7 @@ export default function PlaceCard({ place, style }) {
         >
           {place.cover_image || place.images?.[0] ? (
             <img
-              src={place.cover_image || place.images[0]}
+              src={getImageUrl(place.cover_image || place.images[0])}
               alt={place.name}
               className="w-full h-full object-cover"
               onError={e => { e.target.style.display = 'none'; }}

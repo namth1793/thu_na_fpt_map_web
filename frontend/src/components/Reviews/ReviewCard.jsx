@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ThumbsUp } from 'lucide-react';
-import { reviewsAPI } from '../../utils/api';
+import { reviewsAPI, getImageUrl } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import StarRating from '../Common/StarRating';
 
@@ -95,10 +95,10 @@ export default function ReviewCard({ review, onVote }) {
               {review.images.map((img, i) => (
                 <img
                   key={i}
-                  src={img}
+                  src={getImageUrl(img)}
                   alt=""
                   className="w-20 h-20 object-cover rounded-xl flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => window.open(img, '_blank')}
+                  onClick={() => window.open(getImageUrl(img), '_blank')}
                 />
               ))}
             </div>

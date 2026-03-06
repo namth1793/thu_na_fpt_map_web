@@ -23,7 +23,7 @@ function haversineDistance(lat1, lng1, lat2, lng2) {
 
 // Lấy danh sách địa điểm với bộ lọc
 router.get('/', optionalAuth, (req, res) => {
-  const { search, type_id, min_rating, max_distance, sort = 'distance' } = req.query;
+  const { search, type_ids, min_rating, max_distance, sorts = 'distance' } = req.query;
   const db = getDB();
 
   let query = `
@@ -41,9 +41,12 @@ router.get('/', optionalAuth, (req, res) => {
     const s = `%${search}%`;
     params.push(s, s, s);
   }
-  if (type_id) {
-    query += ' AND p.type_id = ?';
-    params.push(parseInt(type_id));
+  if (type_ids) {
+    const ids = type_ids.split(',').map(Number).filter(Boolean);
+    if (ids.length > 0) {
+      query += ` AND p.type_id IN (${ids.map(() => '?').join(',')})`;
+      params.push(...ids);
+    }
   }
   if (min_rating) {
     query += ' AND p.avg_rating >= ?';
@@ -59,7 +62,8 @@ router.get('/', optionalAuth, (req, res) => {
     popular: 'p.total_reviews DESC',
     distance: 'p.distance_from_fpt ASC',
   };
-  query += ` ORDER BY ${sortMap[sort] || sortMap.distance}`;
+  const sortClauses = sorts.split(',').map(s => sortMap[s.trim()]).filter(Boolean);
+  query += ` ORDER BY ${sortClauses.length > 0 ? sortClauses.join(', ') : sortMap.distance}`;
 
   const places = db.prepare(query).all(...params);
   const getImages = db.prepare('SELECT image_url FROM place_images WHERE place_id = ? LIMIT 3');

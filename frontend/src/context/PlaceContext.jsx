@@ -10,10 +10,10 @@ export function PlaceProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
-    type_id: '',
+    type_ids: [],
     min_rating: '',
     max_distance: '',
-    sort: 'distance',
+    sorts: ['distance'],
   });
 
   useEffect(() => {
@@ -26,9 +26,12 @@ export function PlaceProvider({ children }) {
     setLoading(true);
     try {
       const params = overrideFilters || filters;
-      const clean = Object.fromEntries(
-        Object.entries(params).filter(([, v]) => v !== '' && v != null)
-      );
+      const clean = {};
+      if (params.search) clean.search = params.search;
+      if (params.type_ids && params.type_ids.length > 0) clean.type_ids = params.type_ids.join(',');
+      if (params.min_rating) clean.min_rating = params.min_rating;
+      if (params.max_distance) clean.max_distance = params.max_distance;
+      clean.sorts = (params.sorts && params.sorts.length > 0) ? params.sorts.join(',') : 'distance';
       const res = await placesAPI.getAll(clean);
       setPlaces(res.data);
     } catch (err) {
@@ -46,14 +49,32 @@ export function PlaceProvider({ children }) {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  const toggleType = (id) => {
+    setFilters(prev => {
+      const ids = prev.type_ids.includes(id)
+        ? prev.type_ids.filter(x => x !== id)
+        : [...prev.type_ids, id];
+      return { ...prev, type_ids: ids };
+    });
+  };
+
+  const toggleSort = (key) => {
+    setFilters(prev => {
+      const sorts = prev.sorts.includes(key)
+        ? prev.sorts.filter(x => x !== key)
+        : [...prev.sorts, key];
+      return { ...prev, sorts: sorts.length > 0 ? sorts : ['distance'] };
+    });
+  };
+
   const resetFilters = () => {
-    setFilters({ search: '', type_id: '', min_rating: '', max_distance: '', sort: 'distance' });
+    setFilters({ search: '', type_ids: [], min_rating: '', max_distance: '', sorts: ['distance'] });
   };
 
   return (
     <PlaceContext.Provider value={{
       places, placeTypes, selectedPlace, setSelectedPlace,
-      loading, filters, updateFilter, resetFilters, loadPlaces,
+      loading, filters, updateFilter, toggleType, toggleSort, resetFilters, loadPlaces,
     }}>
       {children}
     </PlaceContext.Provider>

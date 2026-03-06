@@ -56,4 +56,16 @@ export const adminAPI = {
   importExcel: (formData) => api.post('/admin/import-excel', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 };
 
+// Convert relative /uploads/... paths to absolute URL using backend base
+export function getImageUrl(url) {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  const apiBase = import.meta.env.VITE_API_URL;
+  if (apiBase) {
+    const base = apiBase.replace(/\/api\/?$/, '');
+    return `${base}${url}`;
+  }
+  return url;
+}
+
 export default api;

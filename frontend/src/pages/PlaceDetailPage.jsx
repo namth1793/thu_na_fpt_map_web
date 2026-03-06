@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Phone, Clock, Star, Image as ImageIcon, Bookmark, BookmarkCheck } from 'lucide-react';
-import { placesAPI, reviewsAPI } from '../utils/api';
+import { placesAPI, reviewsAPI, getImageUrl } from '../utils/api';
 import { formatDistance, drivingTime, walkingTime } from '../utils/distance';
 import StarRating from '../components/Common/StarRating';
 import ReviewCard from '../components/Reviews/ReviewCard';
@@ -85,7 +85,7 @@ export default function PlaceDetailPage() {
   );
   if (!place) return null;
 
-  const allImages = place.images?.map(i => i.image_url) || [];
+  const allImages = place.images?.map(i => getImageUrl(i.image_url)).filter(Boolean) || [];
   const isPopular = Boolean(place.is_popular);
 
   return (

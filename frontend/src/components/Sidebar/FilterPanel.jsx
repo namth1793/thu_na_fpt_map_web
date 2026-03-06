@@ -36,12 +36,13 @@ function ActivePill({ active, color, onClick, children }) {
 }
 
 export default function FilterPanel() {
-  const { placeTypes, filters, updateFilter } = usePlaces();
+  const { placeTypes, filters, updateFilter, toggleType, toggleSort } = usePlaces();
   const [expanded, setExpanded] = useState(true);
 
   // Count non-default active filters
-  const activeCount = [filters.type_id, filters.min_rating, filters.max_distance].filter(Boolean).length
-    + (filters.sort !== 'distance' ? 1 : 0);
+  const activeCount = filters.type_ids.length
+    + [filters.min_rating, filters.max_distance].filter(Boolean).length
+    + (filters.sorts.length !== 1 || filters.sorts[0] !== 'distance' ? 1 : 0);
 
   return (
     <div className="flex-shrink-0" style={{ borderBottom: '1px solid #f3f4f6' }}>
@@ -70,15 +71,15 @@ export default function FilterPanel() {
 
       {expanded && (
         <div className="px-4 pb-3.5 space-y-3">
-          {/* Sort */}
+          {/* Sort — multi-select */}
           <div>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Sắp xếp</p>
             <div className="flex flex-wrap gap-1.5">
               {SORT_OPTIONS.map(opt => (
                 <ActivePill
                   key={opt.value}
-                  active={filters.sort === opt.value}
-                  onClick={() => updateFilter('sort', opt.value)}
+                  active={filters.sorts.includes(opt.value)}
+                  onClick={() => toggleSort(opt.value)}
                 >
                   {opt.label}
                 </ActivePill>
@@ -86,22 +87,22 @@ export default function FilterPanel() {
             </div>
           </div>
 
-          {/* Place type */}
+          {/* Place type — multi-select */}
           <div>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Loại địa điểm</p>
             <div className="flex flex-wrap gap-1.5">
               <ActivePill
-                active={!filters.type_id}
-                onClick={() => updateFilter('type_id', '')}
+                active={filters.type_ids.length === 0}
+                onClick={() => updateFilter('type_ids', [])}
               >
                 Tất cả
               </ActivePill>
               {placeTypes.map(t => (
                 <ActivePill
                   key={t.id}
-                  active={filters.type_id == t.id}
+                  active={filters.type_ids.includes(t.id)}
                   color={t.color}
-                  onClick={() => updateFilter('type_id', filters.type_id == t.id ? '' : String(t.id))}
+                  onClick={() => toggleType(t.id)}
                 >
                   {t.icon} {t.name}
                 </ActivePill>
