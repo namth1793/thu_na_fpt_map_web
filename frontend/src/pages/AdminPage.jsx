@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/Common/LoadingSpinner';
 import StarRating from '../components/Common/StarRating';
 import { useAuth } from '../context/AuthContext';
-import { adminAPI, placesAPI } from '../utils/api';
+import { adminAPI, placesAPI, getImageUrl } from '../utils/api';
 
 const PLACE_TYPES = [
   { id: 1, name: 'Sống ảo / Check-in', icon: '📸' },
@@ -156,7 +156,7 @@ export default function AdminPage() {
         hours: p.hours || '',
         description: p.description || '',
       });
-      setEditExistingImgs(p.images || []);
+      setEditExistingImgs((p.images || []).map(img => typeof img === 'object' ? img.image_url : img));
       setEditRemovedImgs([]);
       setEditNewImgs([]);
       setEditingPlace(p);
@@ -679,7 +679,7 @@ export default function AdminPage() {
                   {/* Existing images */}
                   {editExistingImgs.map((url, idx) => (
                     <div key={url} className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-slate-200 group flex-shrink-0">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <img src={getImageUrl(url)} alt="" className="w-full h-full object-cover" />
                       <button type="button" onClick={() => removeEditExistingImg(url)}
                         className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                         <X size={16} className="text-white" />

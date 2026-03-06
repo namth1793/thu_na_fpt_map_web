@@ -101,6 +101,15 @@ export default function PlaceDetailPage() {
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/30" />
 
+        {/* Click area to open image full-size */}
+        {allImages[activeImg] && (
+          <div
+            className="absolute inset-0 z-[5] cursor-zoom-in"
+            onClick={() => window.open(allImages[activeImg], '_blank')}
+            title="Xem ảnh đầy đủ"
+          />
+        )}
+
         {/* Back + Bookmark */}
         <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
           <button

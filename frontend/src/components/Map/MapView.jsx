@@ -687,7 +687,7 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
       {user && (
         <button
           onClick={() => setAddStep(s => s === 'picker' ? null : 'picker')}
-          className={`absolute bottom-8 left-5 z-[1000] flex items-center gap-2 px-4 py-2.5 rounded-full shadow-xl text-sm font-semibold transition-all border ${
+          className={`absolute bottom-[72px] md:bottom-8 left-5 z-[1000] flex items-center gap-2 px-4 py-2.5 rounded-full shadow-xl text-sm font-semibold transition-all border ${
             addStep === 'picker'
               ? 'bg-fpt-orange text-white border-fpt-orange'
               : 'bg-white text-gray-700 hover:bg-orange-50 hover:text-fpt-orange border-gray-200 hover:border-fpt-orange'
@@ -705,7 +705,7 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
           {/* Backdrop để đóng picker khi click ngoài */}
           <div className="absolute inset-0 z-[999]" onClick={() => setAddStep(null)} />
           {/* Menu popup */}
-          <div className="absolute bottom-20 left-5 z-[1001] bg-white rounded-2xl shadow-2xl border border-gray-100 w-64 overflow-hidden animate-scale-in">
+          <div className="absolute bottom-[120px] md:bottom-20 left-5 z-[1001] bg-white rounded-2xl shadow-2xl border border-gray-100 w-64 overflow-hidden animate-scale-in">
             <div className="px-4 pt-3 pb-1">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Chọn cách nhập vị trí</p>
             </div>
