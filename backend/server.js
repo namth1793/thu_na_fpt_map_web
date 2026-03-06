@@ -15,9 +15,24 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
   .split(',').map(o => o.trim());
 
+// Kiểm tra origin có được phép không (hỗ trợ wildcard *.vercel.app và giá trị *)
+function isOriginAllowed(origin) {
+  if (!origin) return true; // server-to-server hoặc Postman
+  for (const allowed of allowedOrigins) {
+    if (allowed === '*') return true;
+    if (allowed === origin) return true;
+    // Hỗ trợ wildcard: *.vercel.app khớp với mọi subdomain vercel.app
+    if (allowed.startsWith('*.')) {
+      const suffix = allowed.slice(1); // .vercel.app
+      if (origin.endsWith(suffix)) return true;
+    }
+  }
+  return false;
+}
+
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    if (isOriginAllowed(origin)) return cb(null, true);
     cb(new Error('Not allowed by CORS'));
   },
   credentials: true,
