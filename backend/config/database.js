@@ -174,11 +174,8 @@ function seedData(database) {
     ['Billiard Club 8 Ball', 7, 15.9740, 108.2545, '33 Nguyễn Văn Linh, Ngũ Hành Sơn, Đà Nẵng', '0905 777 888', '14:00 - 00:00', 'Phòng billiard sạch sẽ, bàn mới, có ghế ngồi chờ thoải mái. 15k/frame hoặc 30k/giờ. Có cả bàn snooker!', 4.1, 14, 1.2],
     ['Minimart FPT City', 8, 15.9693, 108.2600, 'Tòa nhà FPT City Center, Ngũ Hành Sơn, Đà Nẵng', null, '06:00 - 23:59', 'Minimart tiện lợi ngay trong khuôn viên. Đồ ăn sáng, snack, nước uống, đồ dùng học tập đầy đủ. Mở cả đêm nữa!', 3.9, 12, 0.1],
     ['Danh Thắng Ngũ Hành Sơn', 1, 15.9833, 108.2640, 'Núi Ngũ Hành Sơn, Ngũ Hành Sơn, Đà Nẵng', '0236 3961 114', '07:00 - 17:30', '5 ngọn núi đá cẩm thạch với chùa, hang động và view cực đẹp. Check-in sang xịn mịn! Nên đi sáng sớm ít người hơn.', 4.7, 89, 2.5],
-    ['Karaoke Blue Night', 2, 15.9800, 108.2490, '67 Nguyễn Hữu Thọ, Hải Châu, Đà Nẵng', '0905 222 333', '16:00 - 02:00', 'Karaoke phòng riêng cao cấp, âm thanh Yamaha chuẩn chuyên nghiệp. Happy hour 16-20h giảm 30%! Hay book trước cuối tuần.', 4.4, 26, 3.1],
 
     // ── Cafe & Đồ uống ─────────────────────────────────────────────────────
-    // ID 16
-    ['Phúc Long Coffee & Tea', 4, 15.9740, 108.2655, '15 Võ Nguyên Giáp, Ngũ Hành Sơn, Đà Nẵng', '1800 6471', '07:00 - 22:00', 'Chuỗi trà sữa và cà phê nổi tiếng, vị ổn định, giá bình dân. Trà xanh latte và sữa tươi trân châu là best-seller. Gần trường, tiện ghé buổi sáng!', 4.3, 38, 0.8],
     // ID 17
     ['The Coffee House Ngũ Hành Sơn', 4, 15.9818, 108.2578, '102 Nguyễn Hữu Thọ, Ngũ Hành Sơn, Đà Nẵng', '1800 6995', '07:00 - 22:30', 'Không gian thoáng, ánh sáng đẹp, có tầng 2 view đường. Wifi mạnh, order trên app được. Hay đến buổi sáng uống cold brew học bài!', 4.4, 29, 1.4],
     // ID 18
@@ -195,10 +192,6 @@ function seedData(database) {
     ['Bún Bò Huế Cô Hà', 6, 15.9758, 108.2507, '20 Trần Hưng Đạo, Ngũ Hành Sơn, Đà Nẵng', '0905 234 567', '06:30 - 11:00', 'Bún bò chuẩn vị Huế, nước dùng đậm đà, chả cua tươi. Chỉ mở buổi sáng nên phải đến sớm. Tô lớn 45k ăn no lắm!', 4.7, 58, 1.7],
     // ID 23
     ['Mì Quảng Bà Vị', 6, 15.9743, 108.2672, '5 Nguyễn Phan Vinh, Ngũ Hành Sơn, Đà Nẵng', null, '07:00 - 14:00', 'Mì Quảng đặc sản Đà Nẵng, nước nhân đậm vị, thịt gà + tôm tươi. Ăn kèm bánh tráng nướng mới đúng điệu. 35k/tô, sinh viên ăn được!', 4.5, 43, 1.2],
-    // ID 24
-    ['Quán Nhậu Biển Xanh', 6, 15.9673, 108.2712, '200 Võ Nguyên Giáp, Ngũ Hành Sơn, Đà Nẵng', '0236 3999 555', '16:00 - 23:00', 'Nhậu nhẹ view biển buổi tối, hải sản tươi sống đặt theo kg. Ốc hương xào lăn và mực nướng là phải gọi. Giá hơi cao nhưng không khí chill vô đối!', 4.2, 37, 2.0],
-    // ID 25
-    ['Lẩu Hải Sản Trường Sa', 6, 15.9831, 108.2728, '88 Trường Sa, Ngũ Hành Sơn, Đà Nẵng', '0905 345 678', '11:00 - 22:00', 'Lẩu hải sản tươi đúng vị, nồi lớn ăn theo nhóm rất đã. Tôm hùm, ghẹ, ngao hấp sả ngon hết ý. Hay đặt bàn trước vì đông khách cuối tuần!', 4.3, 31, 2.8],
     // ID 26
     ['Cơm Gà Tam Kỳ Cô Ba', 6, 15.9800, 108.2493, '45 Hải Phòng nối dài, Ngũ Hành Sơn, Đà Nẵng', '0905 456 111', '10:00 - 21:00', 'Cơm gà kiểu Tam Kỳ, cơm vàng béo, gà xé mềm ngon. Nước chấm gừng pha đúng chuẩn. 50k/suất, ăn no mà ngon hơn cơm canteen nhiều!', 4.4, 49, 2.4],
     // ID 27
@@ -211,8 +204,6 @@ function seedData(database) {
     ['Escape Room Da Nang', 7, 15.9928, 108.2490, '23 Điện Biên Phủ nhánh, Ngũ Hành Sơn, Đà Nẵng', '0905 567 890', '10:00 - 22:00', 'Trốn thoát phòng bí ẩn với 6 chủ đề khác nhau. Thích hợp chơi nhóm 3-6 người. Có phòng horror cho team thích mạo hiểm. 100k/người, đặt trước nhé!', 4.3, 20, 3.8],
     // ID 30
     ['Phòng Game Net Speed', 7, 15.9722, 108.2538, '9 Nguyễn Đình Thi, Ngũ Hành Sơn, Đà Nẵng', '0905 678 901', '07:00 - 01:00', 'Net gaming tốc độ cao, máy i7 RTX, màn hình 144Hz. 10k/giờ gói thường, 15k gói VIP ghế massage. Có bán đồ ăn vặt và nước ngay tại chỗ!', 4.0, 16, 0.8],
-    // ID 31
-    ['Pub & Beer Club Bờ Biển', 7, 15.9780, 108.2705, '350 Võ Nguyên Giáp, Ngũ Hành Sơn, Đà Nẵng', '0905 789 012', '18:00 - 02:00', 'Beer club ngay mép biển, nhạc live acoustic tối 3-4-5, DJ set cuối tuần. Không khí cực thoải mái, giá bia craft từ 40k. Hay rủ cả nhóm cuối tuần!', 4.4, 41, 2.5],
     // ID 32
     ['Karaoke Lucky Star', 2, 15.9841, 108.2518, '78 Lê Đức Thọ, Ngũ Hành Sơn, Đà Nẵng', '0905 111 777', '14:00 - 02:00', 'Phòng karaoke mới, màn hình LED 4K, 10.000+ bài hát cập nhật liên tục kể cả hit mới nhất. Có phòng mini cho 3-4 người giá rẻ hơn. Gọi nước tại phòng!', 4.3, 22, 2.5],
     // ID 33
@@ -229,8 +220,6 @@ function seedData(database) {
     ['Sân Tennis Bãi Biển', 3, 15.9830, 108.2625, '5 Trường Sa, Ngũ Hành Sơn, Đà Nẵng', '0905 543 210', '06:00 - 21:00', '4 sân tennis tiêu chuẩn, mặt sân tốt, view biển phía xa. 50k/sân/giờ, có HLV dạy kèm theo yêu cầu. Đặt lịch sớm vào cuối tuần vì đông lắm!', 4.0, 11, 2.2],
 
     // ── Check-in & Sống ảo ─────────────────────────────────────────────────
-    // ID 38
-    ['Bãi Đá Ôm Biển Nước Mặn', 1, 15.9850, 108.2748, 'Bờ biển Nước Mặn, Ngũ Hành Sơn, Đà Nẵng', null, '05:00 - 20:00', 'Bãi đá tự nhiên hoang sơ, ít người biết, sóng vỗ đá cực ảo. Check-in buổi sáng sớm ánh nắng vàng rất đẹp. Đi giày bệt thôi vì đá trơn!', 4.4, 18, 3.4],
     // ID 39
     ['Vườn Hoa Công Viên Hòa Hải', 1, 15.9848, 108.2590, 'Công viên Hòa Hải, Ngũ Hành Sơn, Đà Nẵng', null, '05:00 - 22:00', 'Công viên xanh mát, nhiều hoa đẹp theo mùa, có khu thể dục ngoài trời. Sáng sớm người già tập thể dục, chiều tối sinh viên ra hóng gió chill!', 4.1, 9, 1.7],
     // ID 40
@@ -265,8 +254,6 @@ function seedData(database) {
     ['KFC Ngũ Hành Sơn', 6, 15.9821, 108.2510, '120 Nguyễn Hữu Thọ, Ngũ Hành Sơn, Đà Nẵng', '1800 6263', '09:00 - 23:00', 'Gà rán KFC chuẩn vị, phục vụ nhanh. Combo sinh viên 69k là tiết kiệm nhất. Hay đến giờ vắng 2-4h chiều không cần chờ. Giao hàng nhanh qua app KFC!', 4.0, 55, 2.0],
     // ID 52
     ['Lotteria Đà Nẵng', 6, 15.9897, 108.2435, 'Lotte Mart, 6 Nại Nam, Ngũ Hành Sơn, Đà Nẵng', '1900 2557', '09:00 - 22:00', 'Hamburger Lotteria ngay trong Lotte Mart, tiện mua sắm xong ghé ăn. Cá hồi burger và shrimp burger ngon nhất. Giá ổn cho fast food, combo đủ no!', 3.9, 33, 3.9],
-    // ID 53
-    ['Pizza Non Nước', 6, 15.9768, 108.2635, '60 Võ Nguyên Giáp, Ngũ Hành Sơn, Đà Nẵng', '0236 3966 777', '11:00 - 22:00', 'Pizza đế mỏng giòn, nhân hải sản tươi đặc trưng Đà Nẵng. Có pizza Tôm Mực Cà Chua là đặc biệt. Giao hàng trong 3km, hay gọi về phòng ký túc!', 4.2, 24, 1.0],
     // ID 54
     ['Phở Bà Ngọc Truyền Thống', 6, 15.9718, 108.2556, '4 Lê Văn Hiến, Ngũ Hành Sơn, Đà Nẵng', null, '06:00 - 11:30', 'Phở bò Hà Nội chuẩn vị, nước dùng trong veo hầm xương 12 tiếng. Tái + nạm + gân ngon bá cháy, hành lá thơm. Chỉ mở sáng đến 11h30!', 4.6, 41, 0.8],
     // ID 55
@@ -281,8 +268,6 @@ function seedData(database) {
     ['Cơm Tấm Sài Gòn Bà Hai', 6, 15.9819, 108.2541, '40 Nguyễn Hữu Thọ, Ngũ Hành Sơn, Đà Nẵng', '0905 789 333', '07:00 - 21:00', 'Cơm tấm sườn bì chả kiểu Sài Gòn, cơm dẻo thơm, sườn nướng than hoa ngon. Suất đầy đủ chỉ 40k. Mắm chua ngọt tự làm rất ngon, nước mía miễn phí!', 4.3, 39, 2.1],
     // ID 60
     ['Bánh Tráng Cuốn Thịt Heo Mẹ Hằng', 6, 15.9729, 108.2578, '11 Trần Đại Nghĩa, Ngũ Hành Sơn, Đà Nẵng', null, '10:00 - 21:30', 'Đặc sản Đà Nẵng không thể bỏ qua! Bánh tráng mỏng cuốn thịt heo luộc, tôm, rau sống, chấm mắm nêm chuẩn vị. Set 2 người 80k là đủ!', 4.7, 55, 0.6],
-    // ID 61
-    ['Bê Thui Cầu Mống Cô Xánh', 6, 15.9762, 108.2610, '88 Võ Nguyên Giáp, Ngũ Hành Sơn, Đà Nẵng', '0905 321 555', '10:00 - 22:00', 'Bê thui chấm mắm nêm gừng, đặc sản hiếm có ngoài Đà Nẵng. Thịt mềm không dai, thơm không hôi. Ăn lần đầu hơi lạ nhưng ghiền ngay, phải thử!', 4.5, 36, 1.0],
     // ID 62
     ['Hủ Tiếu Nam Vang Tứ Hải', 6, 15.9793, 108.2536, '28 Nguyễn Văn Linh, Ngũ Hành Sơn, Đà Nẵng', null, '06:00 - 13:00', 'Hủ tiếu Nam Vang sáng sớm, nước lèo ngọt thanh, thịt bằm + tôm + trứng cút. Khách quen đến hàng ngày. Ăn sáng no rồi vào học tỉnh táo lắm!', 4.4, 22, 2.0],
     // ID 63
@@ -291,8 +276,6 @@ function seedData(database) {
     // ── Giải trí (thêm) ───────────────────────────────────────────────
     // ID 64
     ['VR Game Zone', 7, 15.9846, 108.2509, '12 Lê Đức Thọ, Ngũ Hành Sơn, Đà Nẵng', '0905 888 222', '10:00 - 22:00', 'Trải nghiệm thực tế ảo VR: bắn súng, đua xe, roller coaster ảo. 50k/lượt 15 phút, nhiều game hay cho cả nhóm. Hay rủ bạn bè thử các game mới nhất!', 4.1, 18, 2.4],
-    // ID 65
-    ['Mini Golf Bờ Biển', 7, 15.9760, 108.2700, '280 Võ Nguyên Giáp, Ngũ Hành Sơn, Đà Nẵng', '0905 777 333', '09:00 - 22:00', 'Sân golf mini 18 lỗ ngay cạnh biển, view đẹp, phù hợp hẹn hò hoặc đi nhóm. 60k/người chơi thoải mái. Chiều tối view sunset cực đẹp!', 4.2, 25, 2.0],
     // ID 66
     ['Kidzone Khu Vui Chơi Thiếu Nhi', 7, 15.9881, 108.2488, '8 Lê Đức Thọ, Ngũ Hành Sơn, Đà Nẵng', '0236 3800 111', '09:00 - 21:00', 'Khu vui chơi trong nhà, có cầu trượt, nhà banh, khu phân vai nghề nghiệp. Hay đi cùng gia đình hoặc dẫn em nhỏ. Điều hòa mát, cuối tuần đông vui!', 3.9, 14, 2.8],
     // ID 67
@@ -309,15 +292,10 @@ function seedData(database) {
     ['Sân Bóng Rổ FPT City', 3, 15.9682, 108.2613, 'Khu đô thị FPT City, Ngũ Hành Sơn, Đà Nẵng', null, '06:00 - 22:00', 'Sân bóng rổ ngoài trời trong khuôn viên FPT, miễn phí cho SV FPT. Đèn chiếu sáng ban đêm, mặt sân nhựa mới. Chiều tối hay có anh em năm 3-4 chơi!', 4.2, 21, 0.2],
 
     // ── Check-in & Sống ảo (thêm) ──────────────────────────────────────
-    // ID 72
-    ['Bãi Biển Mỹ Khê', 1, 15.9991, 108.2748, 'Bãi biển Mỹ Khê, Ngũ Hành Sơn, Đà Nẵng', null, '05:00 - 22:00', 'Bãi biển nổi tiếng nhất Đà Nẵng, top 6 bãi biển đẹp nhất châu Á. Cát trắng mịn, nước trong xanh. Sáng sớm chụp bình minh đẹp xuất sắc!', 4.8, 120, 4.2],
     // ID 73
     ['Làng Đá Mỹ Nghệ Non Nước', 1, 15.9795, 108.2680, 'Làng đá Non Nước, Ngũ Hành Sơn, Đà Nẵng', null, '07:00 - 18:00', 'Làng nghề điêu khắc đá cẩm thạch 400 năm tuổi. Xem nghệ nhân tạc tượng, mua quà lưu niệm. Góc chụp với tượng đá nghệ thuật rất đẹp!', 4.4, 57, 1.3],
     // ID 74
     ['Công Viên Đông Bắc View Núi', 1, 15.9920, 108.2610, 'Công viên Đông Bắc, Ngũ Hành Sơn, Đà Nẵng', null, '05:00 - 22:00', 'Công viên lớn view nhìn về phía núi Non Nước, hoa cỏ xanh mát. Sáng sớm nhiều người chạy bộ, chiều tối chill với đèn công viên lung linh!', 4.0, 18, 2.7],
-    // ID 75
-    ['Ghềnh Đá Bãi Bụt', 1, 15.9960, 108.2748, 'Bãi Bụt, Ngũ Hành Sơn, Đà Nẵng', null, '05:00 - 18:00', 'Ghềnh đá hoang sơ ít người biết, sóng vỗ ghềnh đá rất đẹp. Nước biển trong xanh thấy đáy, hay đến sáng sớm ánh vàng chụp ảnh nghệ!', 4.6, 32, 4.5],
-
     // ── Mua sắm (thêm) ────────────────────────────────────────────────
     // ID 76
     ['Co.opmart Ngũ Hành Sơn', 8, 15.9880, 108.2512, '200 Nguyễn Hữu Thọ, Ngũ Hành Sơn, Đà Nẵng', '0236 3888 666', '07:00 - 22:00', 'Siêu thị hàng Việt, giá ổn định, hay có khuyến mại cuối tuần. Hàng thực phẩm tươi sống đa dạng, đồ gia dụng đầy đủ. Thanh toán QR, tích điểm thẻ!', 4.1, 28, 2.7],
@@ -348,7 +326,6 @@ function seedData(database) {
     [1,  2, 5, 'Biển đẹp cực kỳ!',               'Non Nước đẹp hơn Mỹ Khê nhiều. Sóng nhẹ, cát mịn, ít khách du lịch hơn. Chiều tối hay ra đây ngắm hoàng hôn!', '["đẹp","yên tĩnh","hoàng hôn","cát trắng"]'],
     [7,  2, 4, 'Bar chill xịn sò!',               'View từ rooftop nhìn ra biển đêm đẹp lắm. Cocktail đắt hơn bình thường nhưng xứng đáng. Phù hợp đi dịp đặc biệt!', '["view đẹp","cocktail","lãng mạn","đắt chút"]'],
     // Places mới
-    [16, 2, 4, 'Phúc Long gần trường tiện lắm!', 'Sáng nào cũng ghé lấy ly trà sữa trước khi vào học. Vị ổn định, không quá ngọt, nhân viên nhanh tay. Giá hơi cao hơn quán nhỏ nhưng chất lượng!', '["tiện lợi","ngon","nhanh"]'],
     [17, 2, 5, 'The Coffee House chill cực!',      'Không gian rộng, nhiều ổ điện, wifi ổn. Hay ngồi đây làm bài tập nhóm cả buổi chiều. Cold brew ngon nhất trong các chuỗi mình đã thử!', '["học bài","nhóm","wifi tốt","rộng rãi"]'],
     [19, 2, 5, 'Cộng Cà Phê decor đỉnh!',        'Cà phê cốt dừa ở đây là phải thử, ngon mà lạ miệng. Nhạc hay, không khí yên tĩnh, chụp ảnh ra góc nào cũng đẹp!', '["đẹp","chill","lạ","phải thử"]'],
     [20, 2, 5, 'Cafe nhỏ mà xinh lắm!',           'Quán nhỏ xinh decor vintage cực đẹp, nhiều góc sống ảo hay. Cà phê ngon, chủ quán thân thiện hay cho thêm bánh khi vắng khách!', '["đẹp","check-in","thân thiện","tiết kiệm"]'],
@@ -358,10 +335,8 @@ function seedData(database) {
     [27, 2, 5, 'Chè siêu ngon giá rẻ!',           'Chè bắp và chè đậu đỏ ở đây ngon nhất khu. 15k một ly đầy ắp, ngọt vừa, không bị ngấy. Buổi chiều hay ghé ăn giải nhiệt sau môn thể chất!', '["ngon","rẻ","giải nhiệt","chiều"]'],
     [29, 2, 4, 'Escape Room vui và hồi hộp!',     'Chơi phòng Mật Thất cùng nhóm 5 người, đề khó vừa phải mà căng thẳng cực. Hết 1 tiếng phải xin hint 2 lần nhưng tự mở được cửa. Lần sau thử phòng horror!', '["vui","nhóm","hồi hộp","thử thách"]'],
     [30, 2, 4, 'Net gaming ổn ở gần trường!',     'Máy mới, đường truyền ổn định, chơi VALORANT và LOL không lag. Ghế thoải mái, điều hòa mát. Chỉ tiếc giờ cao điểm hết máy VIP hay phải chờ!', '["gaming","gần trường","máy mới","mát"]'],
-    [31, 2, 5, 'Pub biển chill nhất Đà Nẵng!',   'Nhạc live acoustic tối thứ 5 nghe chill vô cùng. Ngồi ngoài trời nghe sóng biển + nhạc guitar + ly bia lạnh là hoàn hảo. Hay đi nhóm bạn cuối tuần!', '["chill","nhạc live","biển","nhóm"]'],
     [35, 2, 5, 'Hồ bơi view biển đỉnh quá!',     'Bơi xong ngồi nghỉ nhìn ra biển thư giãn cực. Nước sạch, hồ rộng, có phao và phao bơi thuê. Đến sáng sớm ít người, bơi sướng hơn nhiều!', '["thư giãn","view đẹp","sạch","sáng sớm"]'],
     [36, 2, 5, 'Yoga buổi sáng giúp tỉnh táo!',  'Lớp 6h sáng chỉ 6-7 người, thầy hướng dẫn tỉ mỉ. Học xong vào lớp tỉnh táo hẳn, focus tốt hơn hẳn. Thẻ tháng 400k cực hợp lý cho SV!', '["tỉnh táo","sức khỏe","sáng sớm","giá tốt"]'],
-    [38, 2, 5, 'Bãi đá hoang sơ cực đẹp!',       'Ít người biết nên yên tĩnh, ảnh chụp ra cực nghệ. Sóng vỗ đá mạnh, âm thanh tự nhiên nghe cực chill. Đi giày thể thao thôi, đá trơn!', '["hoang sơ","đẹp","yên tĩnh","check-in"]'],
     [40, 2, 5, 'Cafe hoa giấy đẹp nhất khu!',    'Hoa giấy đỏ tím trồng khắp vườn, chụp ảnh góc nào cũng ra bộ. Cà phê ngon, phục vụ nhiệt tình. Hay đến buổi chiều ánh nắng đẹp hơn!', '["đẹp","hoa","check-in","chiều tà"]'],
     [43, 2, 3, 'Circle K tiện nhưng giá hơi cao', 'Tiện 24/7, mua mì cốc lúc 2h sáng ôn thi không cần đi đâu xa. Nhưng giá cao hơn siêu thị, chỉ nên ghé khi cần gấp. Nhiều SV FPT hay tụ tập ở đây!', '["tiện lợi","24/7","đêm","gần trường"]'],
     // Reviews địa điểm mới
@@ -373,16 +348,14 @@ function seedData(database) {
     [60, 2, 5, 'Bánh tráng cuốn không đâu ngon bằng!', 'Đặc sản Đà Nẵng số 1! Thịt heo luộc mỏng cuốn bánh tráng mỏng với rau sống, chấm mắm nêm, ngon đến không thể dừng được. Set đôi 80k là đủ ăn no!', '["đặc sản","ngon","đà nẵng","phải thử"]'],
     [63, 2, 5, 'Ốc vặt tụ điểm SV FPT!',         'Xe ốc ngay gần cổng FPT, tối nào cũng đông. Ốc hương, ốc vú nàng xào sả ớt ngon bá cháy. 50k hai đứa ăn no vặt, ngồi nói chuyện đến 11 giờ đêm!', '["ngon","rẻ","tụ điểm","đêm"]'],
     [68, 2, 4, 'Pickleball đang hot lắm!',        'Mới tập chơi pickleball theo trend, sân gần FPT tiện quá. Dễ chơi hơn tennis nhiều, sau 3 buổi đã tự chơi được. Thuê vợt tại chỗ 10k, cực tiện!', '["hot","dễ chơi","gần trường","tiện"]'],
-    [72, 2, 5, 'Mỹ Khê đẹp hơn mình nghĩ!',     'Top 6 bãi biển đẹp nhất châu Á không phải nói cho vui. Cát trắng mịn, nước trong xanh, sóng vừa phải. Đi sáng sớm 5h30 bình minh lên đẹp không thốt nên lời!', '["đẹp","bình minh","biển","cát trắng"]'],
     [73, 2, 4, 'Làng đá cực đẹp, độc đáo!',      'Xem các nghệ nhân tạc tượng đá từ phôi thô ra tác phẩm thật ấn tượng. Tượng đá đặt khắp làng chụp ảnh ra nghệ lắm. Mua quà lưu niệm về cho gia đình rất ý nghĩa!', '["nghệ thuật","check-in","đẹp","quà"]'],
-    [75, 2, 5, 'Ghềnh đá Bãi Bụt bí mật!',      'Ít người biết nên yên tĩnh cực, chỉ vài người đến chụp ảnh. Đá granit đen, nước xanh ngọc, nhìn như ảnh nước ngoài. Sáng sớm ánh vàng chiếu vào đẹp xuất sắc!', '["hoang sơ","đẹp","ít người","check-in"]'],
   ];
 
   reviews.forEach(r => insertReview.run(...r));
 
   // Cập nhật rating cho tất cả place có review
-  [1, 3, 7, 9, 11, 14, 16, 17, 19, 20, 21, 22, 23, 27, 29, 30, 31, 35, 36, 38, 40, 43,
-   44, 47, 54, 55, 56, 60, 63, 68, 72, 73, 75]
+  [1, 3, 7, 9, 11, 14, 17, 19, 20, 21, 22, 23, 27, 29, 30, 35, 36, 40, 43,
+   44, 47, 54, 55, 56, 60, 63, 68, 73]
     .forEach(id => updatePlaceRating(database, id));
 
   console.log('Dữ liệu mẫu đã được tạo!');
