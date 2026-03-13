@@ -1,5 +1,5 @@
+import { Eye, EyeOff, MapPin, X } from 'lucide-react';
 import { useState } from 'react';
-import { X, Eye, EyeOff, MapPin } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function AuthModal({ onClose, onSuccess }) {
@@ -155,46 +155,7 @@ export default function AuthModal({ onClose, onSuccess }) {
             >
               {mode === 'login' ? 'Đăng ký miễn phí' : 'Đăng nhập ngay'}
             </button>
-          </p>
-
-          {/* Demo accounts */}
-          <div className="mt-4 rounded-xl overflow-hidden border border-gray-100">
-            <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tài khoản demo</p>
-            </div>
-            <div className="divide-y divide-gray-50">
-              <button
-                type="button"
-                onClick={() => {
-                  setForm({ name: '', email: 'sinhvien@fpt.edu.vn', password: 'user123' });
-                  setMode('login');
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-gray-50 transition-colors text-left"
-              >
-                <div className="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center text-xs flex-shrink-0">👤</div>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-gray-700 truncate">sinhvien@fpt.edu.vn</p>
-                  <p className="text-[10px] text-gray-400">user123</p>
-                </div>
-                <span className="text-[10px] text-blue-500 font-medium ml-auto flex-shrink-0">Dùng</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setForm({ name: '', email: 'admin@fpt.edu.vn', password: 'admin123' });
-                  setMode('login');
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-gray-50 transition-colors text-left"
-              >
-                <div className="w-6 h-6 rounded-lg bg-orange-100 flex items-center justify-center text-xs flex-shrink-0">🛡️</div>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-gray-700 truncate">admin@fpt.edu.vn</p>
-                  <p className="text-[10px] text-gray-400">admin123</p>
-                </div>
-                <span className="text-[10px] text-fpt-orange font-medium ml-auto flex-shrink-0">Dùng</span>
-              </button>
-            </div>
-          </div>
+          </p>         
         </div>
       </div>
     </div>

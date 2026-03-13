@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { ChevronRight, Bookmark, BookmarkCheck } from 'lucide-react';
 import { usePlaces } from '../../context/PlaceContext';
 import { useAuth } from '../../context/AuthContext';
@@ -23,6 +24,7 @@ export default function PlaceCard({ place, style }) {
   const navigate = useNavigate();
   const { setSelectedPlace } = usePlaces();
   const { user, savedPlaceIds, toggleSave } = useAuth();
+  const [bookmarkAnim, setBookmarkAnim] = useState(false);
 
   const isSaved = savedPlaceIds.has(Number(place.id));
   const isPopular = Boolean(place.is_popular);
@@ -39,6 +41,8 @@ export default function PlaceCard({ place, style }) {
   async function handleBookmark(e) {
     e.stopPropagation();
     if (!user) { navigate('/'); return; }
+    setBookmarkAnim(true);
+    setTimeout(() => setBookmarkAnim(false), 400);
     try {
       await toggleSave(place.id);
     } catch {/* ignore */}
@@ -69,7 +73,7 @@ export default function PlaceCard({ place, style }) {
             <img
               src={getImageUrl(place.cover_image || place.images[0])}
               alt={place.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover card-img"
               onError={e => { e.target.style.display = 'none'; }}
             />
           ) : (
@@ -106,7 +110,7 @@ export default function PlaceCard({ place, style }) {
           {user && (
             <button
               onClick={handleBookmark}
-              className="flex-shrink-0 mt-0.5 p-0.5 rounded-md transition-colors hover:bg-orange-50"
+              className={`flex-shrink-0 mt-0.5 p-0.5 rounded-md transition-colors hover:bg-orange-50 ${bookmarkAnim ? 'bookmark-pop' : ''}`}
               title={isSaved ? 'Bỏ lưu' : 'Lưu địa điểm'}
             >
               {isSaved

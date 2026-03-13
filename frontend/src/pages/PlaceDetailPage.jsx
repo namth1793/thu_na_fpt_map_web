@@ -25,6 +25,7 @@ export default function PlaceDetailPage() {
   const [showContrib, setShowContrib] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
   const [savingBookmark, setSavingBookmark] = useState(false);
+  const [barsVisible, setBarsVisible] = useState(false);
 
   const isSaved = savedPlaceIds.has(Number(id));
 
@@ -41,6 +42,7 @@ export default function PlaceDetailPage() {
       setPlace(placeRes.data);
       setStats(statsRes.data);
       await loadReviews();
+      setTimeout(() => setBarsVisible(true), 400);
     } catch {
       navigate('/');
     } finally {
@@ -89,7 +91,7 @@ export default function PlaceDetailPage() {
   const isPopular = Boolean(place.is_popular);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 animate-page-in">
       {/* Hero */}
       <div
         className="relative h-64 md:h-80 bg-gradient-to-br from-gray-800 to-gray-600 overflow-hidden"
@@ -161,7 +163,7 @@ export default function PlaceDetailPage() {
         )}
 
         {/* Bottom bar */}
-        <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 flex items-end justify-between">
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 flex items-end justify-between animate-hero-slide-up">
           <div className="flex items-center gap-2 flex-wrap">
             <span
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-xs font-semibold backdrop-blur-sm"
@@ -185,7 +187,7 @@ export default function PlaceDetailPage() {
 
       <div className="max-w-3xl mx-auto px-4 py-5 space-y-4">
         {/* Info card */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden animate-fade-in-up">
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden animate-fade-in-up stagger-1">
           <div className="px-5 pt-5 pb-4 border-b border-gray-50">
             <h1 className="text-xl font-bold text-gray-900 leading-tight mb-3">{place.name}</h1>
             <div className="flex flex-wrap gap-2">
@@ -254,7 +256,7 @@ export default function PlaceDetailPage() {
 
         {/* Rating stats */}
         {stats && (
-          <div className="bg-white rounded-2xl shadow-sm p-5 animate-fade-in-up">
+          <div className="bg-white rounded-2xl shadow-sm p-5 animate-fade-in-up stagger-2">
             <h2 className="font-bold text-gray-800 text-base mb-4">Đánh giá tổng quan</h2>
             <div className="flex gap-6 items-center">
               <div className="text-center flex-shrink-0">
@@ -274,9 +276,9 @@ export default function PlaceDetailPage() {
                       <Star size={10} className="text-yellow-400 fill-yellow-400 flex-shrink-0" />
                       <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full transition-all duration-700"
+                          className="h-full rounded-full animate-bar"
                           style={{
-                            width: `${pct}%`,
+                            width: barsVisible ? `${pct}%` : '0%',
                             background: pct > 50 ? '#F05A22' : pct > 20 ? '#FBBF24' : '#D1D5DB',
                           }}
                         />
@@ -291,12 +293,12 @@ export default function PlaceDetailPage() {
         )}
 
         {/* Reviews */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden animate-fade-in-up">
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden animate-fade-in-up stagger-3">
           <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-50">
             <h2 className="font-bold text-gray-800 text-base">Review cộng đồng</h2>
             <button
               onClick={handleWriteReview}
-              className="flex items-center gap-1.5 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:shadow-md hover:-translate-y-px"
+              className="flex items-center gap-1.5 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:-translate-y-px btn-cta-glow"
               style={{ background: 'linear-gradient(135deg, #F05A22, #e04010)' }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

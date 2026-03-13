@@ -220,6 +220,124 @@
   z-index: 10;
 }
 
+/* Glow ring on canvas while spinning */
+@keyframes wheelGlow {
+  0%, 100% { box-shadow: 0 0 18px rgba(240,90,34,0.45), 0 0 36px rgba(236,72,153,0.2); }
+  50%       { box-shadow: 0 0 28px rgba(240,90,34,0.7), 0 0 56px rgba(236,72,153,0.35); }
+}
+.wheel-glow {
+  animation: wheelGlow 0.6s ease-in-out infinite;
+}
+
+/* Confetti fall */
+@keyframes confettiFall {
+  0%   { transform: translateY(-10px) rotate(0deg) scale(1);   opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(340px) rotate(720deg) scale(0.4); opacity: 0; }
+}
+.confetti-piece {
+  animation: confettiFall linear forwards;
+}
+
+/* Win result bounce-in */
+@keyframes winBounce {
+  0%   { transform: scale(0) rotate(-8deg); opacity: 0; }
+  55%  { transform: scale(1.18) rotate(4deg); opacity: 1; }
+  75%  { transform: scale(0.94) rotate(-2deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.animate-win-bounce {
+  animation: winBounce 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Shimmer sweep on spin button */
+@keyframes shimmerSweep {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.btn-spin-shimmer {
+  background-image: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255,255,255,0.25) 50%,
+    transparent 70%
+  ), linear-gradient(to right, #F05A22, #ec4899);
+  background-size: 200% auto, 100% 100%;
+  animation: shimmerSweep 2.2s linear infinite;
+}
+
+/* Floating FAB */
+@keyframes floatFab {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-5px); }
+}
+.animate-float {
+  animation: floatFab 2.8s ease-in-out infinite;
+}
+
+/* Slide down — dropdowns, tooltips */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.animate-slide-down { animation: slideDown 0.2s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+/* Hero bottom bar slide up */
+@keyframes heroSlideUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-hero-slide-up { animation: heroSlideUp 0.55s 0.15s ease forwards; opacity: 0; }
+
+/* Rating bar fill from 0 */
+@keyframes barFill {
+  from { width: 0; }
+}
+.animate-bar { transition: width 0.9s cubic-bezier(0.22,1,0.36,1); }
+
+/* Place card image Ken-Burns-like */
+.card-img { transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94); }
+.group:hover .card-img { transform: scale(1.12); }
+
+/* Shimmer skeleton for image placeholders */
+@keyframes shimmerBg {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.img-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 400px 100%;
+  animation: shimmerBg 1.4s ease-in-out infinite;
+}
+
+/* Bookmark pop on save */
+@keyframes bookmarkPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.45) rotate(-8deg); }
+  70%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+.bookmark-pop { animation: bookmarkPop 0.35s ease forwards; }
+
+/* Page-level fade for route transitions */
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-page-in { animation: pageFadeIn 0.3s ease forwards; }
+
+/* Staggered cards */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.12s; }
+.stagger-3 { animation-delay: 0.2s; }
+
+/* Glow button pulse (for primary CTA) */
+@keyframes ctaGlow {
+  0%, 100% { box-shadow: 0 4px 14px rgba(240,90,34,0.35); }
+  50%       { box-shadow: 0 4px 22px rgba(240,90,34,0.6), 0 0 0 4px rgba(240,90,34,0.12); }
+}
+.btn-cta-glow { animation: ctaGlow 2s ease-in-out infinite; }
+
 /* ===== Professional card hover effects ===== */
 .card-hover {
   transition: box-shadow 0.2s ease, transform 0.2s ease;

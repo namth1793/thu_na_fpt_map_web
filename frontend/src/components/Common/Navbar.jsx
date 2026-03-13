@@ -64,7 +64,7 @@ export default function Navbar() {
               {showMenu && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                  <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-20 min-w-[200px] overflow-hidden">
+                  <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-20 min-w-[200px] overflow-hidden animate-slide-down">
                     {/* User info header */}
                     <div className="px-4 py-3.5 border-b border-gray-50" style={{ background: 'linear-gradient(135deg, #FFF3EE, #FFF9F7)' }}>
                       <div className="flex items-center gap-2.5">
@@ -102,7 +102,7 @@ export default function Navbar() {
           ) : (
             <button
               onClick={() => setShowAuth(true)}
-              className="flex items-center gap-1.5 text-white px-3.5 py-2 rounded-xl text-sm font-semibold transition-all hover:shadow-md hover:-translate-y-px"
+              className="flex items-center gap-1.5 text-white px-3.5 py-2 rounded-xl text-sm font-semibold transition-all hover:-translate-y-px btn-cta-glow"
               style={{ background: 'linear-gradient(135deg, #F05A22, #e04010)' }}
             >
               <LogIn size={14} />

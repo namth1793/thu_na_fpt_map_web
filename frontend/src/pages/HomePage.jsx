@@ -49,7 +49,7 @@ export default function HomePage() {
         {/* Spin wheel FAB - desktop only */}
         <button
           onClick={() => setShowSpinWheel(true)}
-          className="hidden md:flex absolute bottom-8 right-5 z-20 bg-gradient-to-r from-fpt-orange to-pink-500 text-white rounded-full px-5 py-3 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all items-center gap-2 font-semibold text-sm"
+          className="hidden md:flex absolute bottom-8 right-5 z-20 bg-gradient-to-r from-fpt-orange to-pink-500 text-white rounded-full px-5 py-3 shadow-xl hover:shadow-2xl transition-all items-center gap-2 font-semibold text-sm animate-float"
         >
           <Shuffle size={18} />
           <span>Random chỗ chơi!</span>

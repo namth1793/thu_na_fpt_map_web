@@ -14,10 +14,25 @@ function easeOut(t) {
   return 1 - Math.pow(1 - t, 4);
 }
 
+function generateConfetti() {
+  return Array.from({ length: 36 }, (_, i) => ({
+    id: i,
+    x: 5 + Math.random() * 90,
+    color: DEFAULT_COLORS[i % DEFAULT_COLORS.length],
+    delay: Math.random() * 0.6,
+    duration: 1.2 + Math.random() * 0.8,
+    size: 7 + Math.random() * 9,
+    rotation: Math.random() * 360,
+    isCircle: Math.random() > 0.5,
+  }));
+}
+
 export default function SpinWheel({ onClose }) {
   const canvasRef = useRef(null);
   const animRef = useRef(null);
   const currentRotRef = useRef(0);
+  const audioCtxRef = useRef(null);
+  const lastSegRef = useRef(-1);
 
   const [items, setItems] = useState([]);
   const [customInput, setCustomInput] = useState('');
@@ -27,6 +42,7 @@ export default function SpinWheel({ onClose }) {
   const [placeTypes, setPlaceTypes] = useState([]);
   const [selectedType, setSelectedType] = useState('');
   const [loadingPlaces, setLoadingPlaces] = useState(false);
+  const [confetti, setConfetti] = useState([]);
 
   useEffect(() => {
     placesAPI.getTypes().then(r => setPlaceTypes(r.data)).catch(() => {});
@@ -56,7 +72,57 @@ export default function SpinWheel({ onClose }) {
     }
   }
 
-  // Draw wheel on canvas
+  // ===== Audio =====
+  function getAudioCtx() {
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume();
+    }
+    return audioCtxRef.current;
+  }
+
+  function playTick(speed) {
+    try {
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      // Higher pitch = spinning faster
+      osc.frequency.value = 280 + speed * 500;
+      osc.type = 'triangle';
+      const t = ctx.currentTime;
+      gain.gain.setValueAtTime(0.1 + speed * 0.08, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+      osc.start(t);
+      osc.stop(t + 0.045);
+    } catch {}
+  }
+
+  function playWin() {
+    try {
+      const ctx = getAudioCtx();
+      // Ascending arpeggio: C E G C (major chord)
+      [523, 659, 784, 1047].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        const t = ctx.currentTime + i * 0.14;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.28, t + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+        osc.start(t);
+        osc.stop(t + 0.55);
+      });
+    } catch {}
+  }
+
+  // ===== Canvas =====
   const drawWheel = useCallback((rotation = 0) => {
     const canvas = canvasRef.current;
     if (!canvas || items.length === 0) return;
@@ -74,7 +140,6 @@ export default function SpinWheel({ onClose }) {
       const start = rotation + i * segAngle - Math.PI / 2;
       const end = start + segAngle;
 
-      // Segment
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, R, start, end);
@@ -85,7 +150,6 @@ export default function SpinWheel({ onClose }) {
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Text
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate(start + segAngle / 2);
@@ -120,7 +184,6 @@ export default function SpinWheel({ onClose }) {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Center emoji
     ctx.font = '18px serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -134,32 +197,50 @@ export default function SpinWheel({ onClose }) {
   function spin() {
     if (spinning || items.length < 2) return;
     setResult(null);
+    setConfetti([]);
     setSpinning(true);
 
-    const extraSpins = 6 + Math.random() * 4; // 6-10 full rotations
+    const extraSpins = 6 + Math.random() * 4;
     const finalAngle = extraSpins * 2 * Math.PI + Math.random() * 2 * Math.PI;
     const startRot = currentRotRef.current;
     const targetRot = startRot + finalAngle;
     const startTime = performance.now();
+
+    // Init segment tracker
+    const segAngle = (2 * Math.PI) / items.length;
+    const initNorm = ((startRot % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    lastSegRef.current = Math.floor(initNorm / segAngle) % items.length;
 
     function animate(now) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / SPIN_DURATION, 1);
       const currentRot = startRot + finalAngle * easeOut(progress);
       currentRotRef.current = currentRot;
+
+      // Tick sound on segment crossing
+      const normalized = ((currentRot % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      const currentSeg = Math.floor(normalized / segAngle) % items.length;
+      if (currentSeg !== lastSegRef.current) {
+        // speed = derivative of easeOut, ranges 1→0
+        const speed = Math.pow(1 - progress, 3);
+        playTick(speed);
+        lastSegRef.current = currentSeg;
+      }
+
       drawWheel(currentRot);
 
       if (progress < 1) {
         animRef.current = requestAnimationFrame(animate);
       } else {
         // Determine winner
-        const segAngle = (2 * Math.PI) / items.length;
-        // Pointer at top (12 o'clock position)
-        const normalized = ((targetRot % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-        const pointed = (2 * Math.PI - normalized) % (2 * Math.PI);
+        const normalized2 = ((targetRot % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        const pointed = (2 * Math.PI - normalized2) % (2 * Math.PI);
         const winnerIdx = Math.floor(pointed / segAngle) % items.length;
         setResult(items[winnerIdx]);
         setSpinning(false);
+        playWin();
+        setConfetti(generateConfetti());
+        setTimeout(() => setConfetti([]), 2500);
       }
     }
 
@@ -172,13 +253,12 @@ export default function SpinWheel({ onClose }) {
 
   function addCustomItem() {
     if (!customInput.trim()) return;
-    const colors = DEFAULT_COLORS;
     setItems(prev => [
       ...prev,
       {
         id: Date.now(),
         label: customInput.trim(),
-        color: colors[prev.length % colors.length],
+        color: DEFAULT_COLORS[prev.length % DEFAULT_COLORS.length],
         icon: '✨',
       }
     ]);
@@ -205,15 +285,34 @@ export default function SpinWheel({ onClose }) {
         </div>
 
         <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-          {/* Wheel */}
-          <div className="flex flex-col items-center justify-center p-6 flex-shrink-0">
+          {/* Wheel panel */}
+          <div className="flex flex-col items-center justify-center p-6 flex-shrink-0 relative overflow-hidden">
+            {/* Confetti */}
+            {confetti.map(p => (
+              <div
+                key={p.id}
+                className="confetti-piece absolute pointer-events-none"
+                style={{
+                  left: `${p.x}%`,
+                  top: 0,
+                  width: p.size,
+                  height: p.size,
+                  backgroundColor: p.color,
+                  borderRadius: p.isCircle ? '50%' : '2px',
+                  animationDelay: `${p.delay}s`,
+                  animationDuration: `${p.duration}s`,
+                  transform: `rotate(${p.rotation}deg)`,
+                }}
+              />
+            ))}
+
             <div className="relative">
               <div className="spin-wheel-pointer" />
               <canvas
                 ref={canvasRef}
                 width={280}
                 height={280}
-                className="rounded-full shadow-xl"
+                className={`rounded-full shadow-xl transition-all duration-300 ${spinning ? 'wheel-glow' : ''}`}
               />
             </div>
 
@@ -225,14 +324,14 @@ export default function SpinWheel({ onClose }) {
                   ? 'bg-gray-300 cursor-not-allowed'
                   : items.length < 2
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-fpt-orange to-pink-500 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0'
+                    : 'bg-gradient-to-r from-fpt-orange to-pink-500 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 btn-spin-shimmer'
               }`}
             >
               {spinning ? '🌀 Đang quay...' : '🎯 Quay ngay!'}
             </button>
 
             {result && (
-              <div className="mt-4 text-center animate-bounce-in">
+              <div className="mt-4 text-center animate-win-bounce">
                 <div className="text-3xl mb-1">{result.icon}</div>
                 <div className="font-bold text-gray-900">{result.label}</div>
                 <div className="text-xs text-gray-400 mt-1">Số phận đã chọn cho bạn! 🎉</div>
