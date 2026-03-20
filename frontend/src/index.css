@@ -2,43 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== Leaflet Overrides ===== */
-.leaflet-container {
-  font-family: 'Be Vietnam Pro', sans-serif;
-  z-index: 0;
-}
-
-.leaflet-popup-content-wrapper {
+/* ===== Google Maps Overrides ===== */
+.gm-style .gm-style-iw-c {
   border-radius: 16px !important;
   padding: 0 !important;
-  overflow: hidden;
+  overflow: hidden !important;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
-  border: none !important;
+  max-width: 260px !important;
 }
 
-.leaflet-popup-content {
-  margin: 0 !important;
-  width: 240px !important;
+.gm-style .gm-style-iw-d {
+  overflow: hidden !important;
+  max-height: unset !important;
 }
 
-.leaflet-popup-tip-container {
-  margin-top: -1px;
+/* Hide the default close button - popup has its own navigation */
+.gm-style button.gm-ui-hover-effect {
+  top: 4px !important;
+  right: 4px !important;
+  opacity: 0.7 !important;
 }
 
-.leaflet-popup-close-button {
-  z-index: 10;
-  color: #fff !important;
-  font-size: 18px !important;
-  top: 6px !important;
-  right: 8px !important;
-  background: rgba(0,0,0,0.3) !important;
-  border-radius: 50% !important;
-  width: 24px !important;
-  height: 24px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+/* Hide info window tail/arrow */
+.gm-style .gm-style-iw-t::after {
+  display: none !important;
 }
+
+/* Custom locate button in top-right */
+.gm-locate-btn {
+  background: #fff;
+  border: none;
+  border-radius: 4px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  margin-top: 4px;
+  margin-right: 10px;
+}
+.gm-locate-btn:hover { background: #f5f5f5; }
 
 /* ===== Custom Pin Markers ===== */
 .place-pin {
@@ -200,10 +205,6 @@
   100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
 }
 
-/* ===== Place popup overrides ===== */
-.place-popup .leaflet-popup-content {
-  width: 232px !important;
-}
 
 /* ===== Spin Wheel ===== */
 .spin-wheel-pointer {

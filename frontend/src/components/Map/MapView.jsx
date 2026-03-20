@@ -1,19 +1,17 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { Loader } from '@googlemaps/js-api-loader';
 import { X, MapPin, ImagePlus, MousePointerClick, PenLine } from 'lucide-react';
 import { usePlaces } from '../../context/PlaceContext';
 import { useAuth } from '../../context/AuthContext';
 import { placesAPI } from '../../utils/api';
 import { FPT_COORDS, MAX_RADIUS_KM, formatDistance } from '../../utils/distance';
 
-// Fix Leaflet default marker icon
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+// Google Maps API Loader (module-level singleton)
+const mapsLoader = new Loader({
+  apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+  version: 'weekly',
+  libraries: ['marker'],
 });
 
 const PLACE_TYPES = [
@@ -27,52 +25,48 @@ const PLACE_TYPES = [
   { id: 8, name: 'Mua sắm', icon: '🛍️' },
 ];
 
-function createPlaceIcon(color, icon, isPopular) {
-  const cls = isPopular ? 'place-pin-popular' : 'place-pin';
-  return L.divIcon({
-    className: '',
-    html: `<div class="${cls}" style="background-color:${color || '#6B7280'}"><span class="pin-emoji">${icon || '📍'}</span></div>`,
-    iconSize: isPopular ? [44, 44] : [36, 36],
-    iconAnchor: isPopular ? [22, 44] : [18, 36],
-    popupAnchor: [0, isPopular ? -48 : -40],
-  });
+function createPlaceMarkerEl(color, icon, isPopular) {
+  const el = document.createElement('div');
+  el.className = isPopular ? 'place-pin-popular' : 'place-pin';
+  el.style.backgroundColor = color || '#6B7280';
+  const span = document.createElement('span');
+  span.className = 'pin-emoji';
+  span.textContent = icon || '📍';
+  el.appendChild(span);
+  return el;
 }
 
-function createFPTIcon() {
-  return L.divIcon({
-    className: '',
-    html: `<div class="fpt-pin">🎓</div>`,
-    iconSize: [48, 48],
-    iconAnchor: [24, 24],
-    popupAnchor: [0, -30],
-  });
+function createFPTMarkerEl() {
+  const el = document.createElement('div');
+  el.className = 'fpt-pin';
+  el.textContent = '🎓';
+  return el;
 }
 
-function createUserIcon() {
-  return L.divIcon({
-    className: '',
-    html: `<div class="user-location-outer"><div class="user-location-pin"></div></div>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-    popupAnchor: [0, -20],
-  });
+function createUserMarkerEl() {
+  const outer = document.createElement('div');
+  outer.className = 'user-location-outer';
+  const inner = document.createElement('div');
+  inner.className = 'user-location-pin';
+  outer.appendChild(inner);
+  return outer;
 }
 
-function createPreviewIcon() {
-  return L.divIcon({
-    className: '',
-    html: `
-      <div style="display:flex;flex-direction:column;align-items:center">
-        <div style="width:36px;height:36px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#F05A22;border:2.5px solid white;box-shadow:0 3px 12px rgba(240,90,34,0.5);display:flex;align-items:center;justify-content:center">
-          <span style="transform:rotate(45deg);font-size:16px">📍</span>
-        </div>
-        <div style="background:#F05A22;color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:3px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.2)">Vị trí mới</div>
-      </div>
-    `,
-    iconSize: [60, 60],
-    iconAnchor: [18, 36],
-    popupAnchor: [0, -50],
-  });
+function createPreviewMarkerEl() {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center';
+  const pin = document.createElement('div');
+  pin.style.cssText = 'width:36px;height:36px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#F05A22;border:2.5px solid white;box-shadow:0 3px 12px rgba(240,90,34,0.5);display:flex;align-items:center;justify-content:center';
+  const emoji = document.createElement('span');
+  emoji.style.cssText = 'transform:rotate(45deg);font-size:16px';
+  emoji.textContent = '📍';
+  pin.appendChild(emoji);
+  const label = document.createElement('div');
+  label.style.cssText = 'background:#F05A22;color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:3px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.2)';
+  label.textContent = 'Vị trí mới';
+  wrap.appendChild(pin);
+  wrap.appendChild(label);
+  return wrap;
 }
 
 function renderStars(rating) {
@@ -101,10 +95,9 @@ function buildPopupHTML(place) {
   const popularBadge = place.is_popular
     ? `<span style="display:inline-flex;align-items:center;gap:3px;background:#F59E0B;color:#fff;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;margin-left:4px">🔥 Nổi tiếng</span>`
     : '';
-
   return `
     <div style="font-family:'Be Vietnam Pro',sans-serif;width:232px">
-      <div style="background:${color};padding:12px 14px 10px;cursor:pointer;position:relative" onclick="window.__navigateToPlace('${place.id}')">
+      <div style="background:${color};padding:12px 14px 10px;cursor:pointer" onclick="window.__navigateToPlace('${place.id}')">
         <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
           <div style="font-weight:700;font-size:14px;color:#fff;line-height:1.3">${place.name}</div>
           ${popularBadge}
@@ -162,7 +155,6 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
   const [pickingFromMap, setPickingFromMap] = useState(false);
   const imgRef = useRef(null);
 
-  // Update preview marker when lat/lng change
   useEffect(() => {
     const lat = parseFloat(form.lat);
     const lng = parseFloat(form.lng);
@@ -173,7 +165,6 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
     }
   }, [form.lat, form.lng, onPreviewCoords]);
 
-  // Receive coordinates from in-modal map pick
   useEffect(() => {
     const handler = (e) => {
       setForm(f => ({ ...f, lat: e.detail.lat.toFixed(6), lng: e.detail.lng.toFixed(6) }));
@@ -223,14 +214,12 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
   const lat = parseFloat(form.lat);
   const lng = parseFloat(form.lng);
   const coordsValid = !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
-
   const inputCls = 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fpt-orange bg-slate-50 focus:bg-white transition-colors';
 
   return (
     <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center p-0 sm:p-4"
       style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}>
       <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto animate-scale-in">
-        {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-100 sticky top-0 bg-white z-10">
           <div>
             <h3 className="font-bold text-gray-900 flex items-center gap-2">
@@ -238,8 +227,7 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
             </h3>
             <p className="text-xs text-gray-400 mt-0.5">Nhập tọa độ hoặc chọn trực tiếp trên bản đồ</p>
           </div>
-          <button onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
+          <button onClick={onClose} className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
             <X size={15} className="text-gray-600" />
           </button>
         </div>
@@ -248,8 +236,6 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
           {error && (
             <div className="bg-red-50 border border-red-100 text-red-700 text-sm px-3 py-2.5 rounded-xl">{error}</div>
           )}
-
-          {/* Name + Type */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Tên địa điểm *</label>
             <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
@@ -263,21 +249,14 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
               ))}
             </select>
           </div>
-
-          {/* Coordinates section */}
           <div className="bg-slate-50 rounded-xl p-3 space-y-2 border border-slate-200">
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Tọa độ *</label>
-              <button
-                type="button"
-                onClick={handlePickFromMap}
-                disabled={pickingFromMap}
+              <button type="button" onClick={handlePickFromMap} disabled={pickingFromMap}
                 className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
-                  pickingFromMap
-                    ? 'bg-amber-100 text-amber-700 cursor-not-allowed'
+                  pickingFromMap ? 'bg-amber-100 text-amber-700 cursor-not-allowed'
                     : 'bg-white border border-slate-200 text-gray-600 hover:border-fpt-orange hover:text-fpt-orange'
-                }`}
-              >
+                }`}>
                 <MousePointerClick size={13} />
                 {pickingFromMap ? 'Đang chờ click...' : 'Chọn lại trên bản đồ'}
               </button>
@@ -285,23 +264,15 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="block text-[11px] text-gray-500 mb-1">Vĩ độ (Lat)</label>
-                <input
-                  type="number" step="any"
-                  value={form.lat}
+                <input type="number" step="any" value={form.lat}
                   onChange={e => setForm(f => ({ ...f, lat: e.target.value }))}
-                  placeholder="15.971234"
-                  className={`${inputCls} font-mono text-xs`}
-                />
+                  placeholder="15.971234" className={`${inputCls} font-mono text-xs`} />
               </div>
               <div>
                 <label className="block text-[11px] text-gray-500 mb-1">Kinh độ (Lng)</label>
-                <input
-                  type="number" step="any"
-                  value={form.lng}
+                <input type="number" step="any" value={form.lng}
                   onChange={e => setForm(f => ({ ...f, lng: e.target.value }))}
-                  placeholder="108.260000"
-                  className={`${inputCls} font-mono text-xs`}
-                />
+                  placeholder="108.260000" className={`${inputCls} font-mono text-xs`} />
               </div>
             </div>
             {coordsValid ? (
@@ -315,8 +286,6 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
               </div>
             )}
           </div>
-
-          {/* Address, Phone, Hours */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Địa chỉ</label>
             <input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
@@ -339,8 +308,6 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
             <textarea rows={2} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
               className={`${inputCls} resize-none`} placeholder="Mô tả ngắn về địa điểm..." />
           </div>
-
-          {/* Image upload */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">
               Hình ảnh ({images.length}/10)
@@ -368,7 +335,6 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
             </div>
             <input ref={imgRef} type="file" multiple accept="image/*" className="hidden" onChange={handleImgSelect} />
           </div>
-
           <div className="flex gap-2 pt-2 border-t border-slate-100">
             <button type="submit" disabled={saving || !coordsValid}
               className="flex-1 bg-fpt-orange text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-fpt-dark disabled:opacity-50 transition-colors">
@@ -399,16 +365,19 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
   const geoWatchRef = useRef(null);
   const placesDataRef = useRef({});
   const previewMarkerRef = useRef(null);
+  const infoWindowRef = useRef(null);
+  const clickListenerRef = useRef(null);
+  const AdvancedMarkerRef = useRef(null);
+  const isInitializingRef = useRef(false);
 
+  const [mapReady, setMapReady] = useState(false);
   const [routeInfo, setRouteInfo] = useState(null);
   const [toast, setToast] = useState(null);
   const [loadingRoute, setLoadingRoute] = useState(false);
 
   // addStep: null | 'picker' | 'picking' | 'form'
   const [addStep, setAddStep] = useState(null);
-  // pickedCoords: tọa độ chọn từ bản đồ trước khi mở form
   const [pickedCoords, setPickedCoords] = useState(null);
-  // mapPickMode: chọn lại tọa độ trong lúc form đang mở
   const [mapPickMode, setMapPickMode] = useState(false);
 
   const showAddModal = addStep === 'form';
@@ -423,7 +392,7 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
     const map = mapInstanceRef.current;
     if (!map) return;
     setLoadingRoute(true);
-    if (routeLayerRef.current) { routeLayerRef.current.remove(); routeLayerRef.current = null; }
+    if (routeLayerRef.current) { routeLayerRef.current.setMap(null); routeLayerRef.current = null; }
     try {
       const [uLat, uLng] = userCoords;
       const [pLat, pLng] = placeCoords;
@@ -433,17 +402,19 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
       const data = await res.json();
       if (!data.routes?.length) throw new Error('No route');
       const route = data.routes[0];
-      const latlngs = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+      const path = route.geometry.coordinates.map(([lng, lat]) => ({ lat, lng }));
       const isDriving = mode === 'driving';
-      const polyline = L.polyline(latlngs, {
-        color: isDriving ? '#2563EB' : '#059669',
-        weight: isDriving ? 5 : 4,
-        opacity: 0.85,
-        dashArray: isDriving ? null : '10 6',
-        lineJoin: 'round', lineCap: 'round',
-      }).addTo(map);
+      const polylineOpts = isDriving
+        ? { strokeColor: '#2563EB', strokeWeight: 5, strokeOpacity: 0.85 }
+        : {
+            strokeColor: '#059669', strokeWeight: 4, strokeOpacity: 0,
+            icons: [{ icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: 3, strokeColor: '#059669' }, offset: '0', repeat: '20px' }],
+          };
+      const polyline = new google.maps.Polyline({ path, map, ...polylineOpts });
       routeLayerRef.current = polyline;
-      map.fitBounds(polyline.getBounds(), { padding: [70, 70] });
+      const bounds = new google.maps.LatLngBounds();
+      path.forEach(p => bounds.extend(p));
+      map.fitBounds(bounds, { top: 70, right: 70, bottom: 70, left: 70 });
       setRouteInfo({ distance: route.distance, duration: route.duration, mode, placeName, placeCoords });
     } catch {
       showToast('Không thể tải tuyến đường. Vui lòng thử lại sau.');
@@ -453,7 +424,7 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
   }, [showToast]);
 
   const clearRoute = useCallback(() => {
-    if (routeLayerRef.current) { routeLayerRef.current.remove(); routeLayerRef.current = null; }
+    if (routeLayerRef.current) { routeLayerRef.current.setMap(null); routeLayerRef.current = null; }
     setRouteInfo(null);
   }, []);
 
@@ -465,145 +436,159 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
   // ── Preview marker ────────────────────────────────────────────────────────
   const handlePreviewCoords = useCallback((coords) => {
     const map = mapInstanceRef.current;
-    if (!map) return;
+    const AME = AdvancedMarkerRef.current;
+    if (!map || !AME) return;
     if (!coords) {
-      if (previewMarkerRef.current) { previewMarkerRef.current.remove(); previewMarkerRef.current = null; }
+      if (previewMarkerRef.current) { previewMarkerRef.current.map = null; previewMarkerRef.current = null; }
       return;
     }
+    const [lat, lng] = coords;
     if (previewMarkerRef.current) {
-      previewMarkerRef.current.setLatLng(coords);
+      previewMarkerRef.current.position = { lat, lng };
     } else {
-      previewMarkerRef.current = L.marker(coords, {
-        icon: createPreviewIcon(),
-        zIndexOffset: 2000,
-      }).addTo(map);
+      previewMarkerRef.current = new AME({ map, position: { lat, lng }, content: createPreviewMarkerEl(), zIndex: 2000 });
     }
-    map.flyTo(coords, Math.max(map.getZoom(), 15), { duration: 0.6 });
+    map.panTo({ lat, lng });
+    if (map.getZoom() < 15) map.setZoom(15);
   }, []);
 
-  // ── Map pick mode (pre-form picking + in-form re-picking) ─────────────────
+  // ── Map pick mode ─────────────────────────────────────────────────────────
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map) return;
-    const container = map.getContainer();
+    if (!map || !mapReady) return;
 
     if (isPickingActive) {
-      container.classList.add('map-add-mode');
+      mapRef.current?.classList.add('map-add-mode');
       const handler = (e) => {
-        const { lat, lng } = e.latlng;
+        const lat = e.latLng.lat();
+        const lng = e.latLng.lng();
         if (addStep === 'picking') {
-          // Chọn trước khi mở form → lưu coords rồi mở form
           setPickedCoords({ lat, lng });
           setAddStep('form');
         } else {
-          // Chọn lại trong khi form đang mở → dispatch event cho modal
-          window.dispatchEvent(new CustomEvent('modal-map-pick', {
-            detail: { lat, lng },
-          }));
+          window.dispatchEvent(new CustomEvent('modal-map-pick', { detail: { lat, lng } }));
           setMapPickMode(false);
         }
       };
-      map.once('click', handler);
+      clickListenerRef.current = google.maps.event.addListenerOnce(map, 'click', handler);
       return () => {
-        map.off('click', handler);
-        container.classList.remove('map-add-mode');
+        if (clickListenerRef.current) { google.maps.event.removeListener(clickListenerRef.current); clickListenerRef.current = null; }
+        mapRef.current?.classList.remove('map-add-mode');
       };
     } else {
-      container.classList.remove('map-add-mode');
+      mapRef.current?.classList.remove('map-add-mode');
     }
-  }, [addStep, isPickingActive]);
+  }, [addStep, isPickingActive, mapReady]);
 
   // Clean up preview marker khi đóng form
   useEffect(() => {
     if (!showAddModal && previewMarkerRef.current) {
-      previewMarkerRef.current.remove();
+      previewMarkerRef.current.map = null;
       previewMarkerRef.current = null;
     }
   }, [showAddModal]);
 
-  // ── Init map ─────────────────────────────────────────────────────────────
+  // ── Init Google Maps ──────────────────────────────────────────────────────
   useEffect(() => {
-    if (mapInstanceRef.current) return;
-    const map = L.map(mapRef.current, { center: FPT_COORDS, zoom: 14, zoomControl: false, attributionControl: false });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19,
-    }).addTo(map);
-    L.control.zoom({ position: 'topright' }).addTo(map);
+    if (mapInstanceRef.current || isInitializingRef.current) return;
+    isInitializingRef.current = true;
+    let isMounted = true;
 
-    const LocateControl = L.Control.extend({
-      options: { position: 'topright' },
-      onAdd() {
-        const wrap = L.DomUtil.create('div', 'leaflet-bar leaflet-control locate-btn-wrap');
-        wrap.style.cssText = 'margin-top:4px';
-        const btn = L.DomUtil.create('button', '', wrap);
-        btn.title = 'Về vị trí của tôi';
-        btn.style.cssText = 'width:34px;height:34px;border:none;cursor:pointer;background:#fff;display:flex;align-items:center;justify-content:center;border-radius:4px;padding:0';
-        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>`;
-        L.DomEvent.disableClickPropagation(wrap);
-        L.DomEvent.on(btn, 'click', () => {
-          if (userCoordsRef.current) {
-            map.flyTo(userCoordsRef.current, 17, { duration: 0.9 });
-          } else {
-            navigator.geolocation?.getCurrentPosition(
-              (p) => map.flyTo([p.coords.latitude, p.coords.longitude], 17), () => {}
-            );
-          }
-        });
-        return wrap;
-      },
+    mapsLoader.load().then(async () => {
+      if (!isMounted || mapInstanceRef.current) return;
+
+      const { Map: GMap } = await google.maps.importLibrary('maps');
+      const { AdvancedMarkerElement } = await google.maps.importLibrary('marker');
+      AdvancedMarkerRef.current = AdvancedMarkerElement;
+
+      const map = new GMap(mapRef.current, {
+        center: { lat: FPT_COORDS[0], lng: FPT_COORDS[1] },
+        zoom: 14,
+        mapId: import.meta.env.VITE_GOOGLE_MAPS_MAP_ID || 'DEMO_MAP_ID',
+        zoomControl: true,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+        zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_TOP },
+      });
+
+      infoWindowRef.current = new google.maps.InfoWindow({ maxWidth: 260 });
+
+      // FPT marker
+      const fptMarker = new AdvancedMarkerElement({
+        map, position: { lat: FPT_COORDS[0], lng: FPT_COORDS[1] },
+        content: createFPTMarkerEl(), zIndex: 1000, title: 'Đại học FPT Đà Nẵng',
+      });
+      const fptIW = new google.maps.InfoWindow({
+        content: `<div style="padding:14px 16px;font-family:'Be Vietnam Pro',sans-serif"><div style="font-weight:700;font-size:14px;color:#F05A22;margin-bottom:4px">🎓 Đại học FPT Đà Nẵng</div><div style="font-size:12px;color:#6B7280">Khu đô thị FPT City, Ngũ Hành Sơn</div><div style="margin-top:6px;display:inline-flex;align-items:center;gap:4px;background:#FFF3EE;border-radius:20px;padding:2px 8px"><span style="font-size:11px;color:#F05A22;font-weight:500">📍 Trung tâm bán kính 7km</span></div></div>`,
+        maxWidth: 220,
+      });
+      fptMarker.addListener('click', () => fptIW.open({ anchor: fptMarker, map }));
+
+      // Radius circle
+      new google.maps.Circle({
+        map, center: { lat: FPT_COORDS[0], lng: FPT_COORDS[1] },
+        radius: MAX_RADIUS_KM * 1000,
+        strokeColor: '#F05A22', strokeWeight: 1.5, strokeOpacity: 1,
+        fillColor: '#F05A22', fillOpacity: 0.03,
+      });
+
+      // Custom locate button
+      const locateBtn = document.createElement('button');
+      locateBtn.className = 'gm-locate-btn';
+      locateBtn.title = 'Về vị trí của tôi';
+      locateBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>`;
+      locateBtn.addEventListener('click', () => {
+        if (userCoordsRef.current) {
+          map.panTo({ lat: userCoordsRef.current[0], lng: userCoordsRef.current[1] });
+          map.setZoom(17);
+        } else {
+          navigator.geolocation?.getCurrentPosition(
+            (p) => { map.panTo({ lat: p.coords.latitude, lng: p.coords.longitude }); map.setZoom(17); }, () => {}
+          );
+        }
+      });
+      map.controls[google.maps.ControlPosition.RIGHT_TOP].push(locateBtn);
+
+      mapInstanceRef.current = map;
+
+      // Geolocation watch
+      if (navigator.geolocation) {
+        geoWatchRef.current = navigator.geolocation.watchPosition(
+          ({ coords: { latitude, longitude } }) => {
+            const coords = [latitude, longitude];
+            userCoordsRef.current = coords;
+            if (!userMarkerRef.current) {
+              userMarkerRef.current = new AdvancedMarkerElement({
+                map, position: { lat: latitude, lng: longitude },
+                content: createUserMarkerEl(), zIndex: 900, title: 'Vị trí của bạn',
+              });
+              const userIW = new google.maps.InfoWindow({
+                content: `<div style="padding:10px 14px;font-family:'Be Vietnam Pro',sans-serif"><div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;background:#2563EB;border-radius:50%"></div><span style="font-size:13px;font-weight:600;color:#1D4ED8">Vị trí của bạn</span></div><div style="font-size:11px;color:#9CA3AF;margin-top:3px">Đang cập nhật theo thời gian thực</div></div>`,
+                maxWidth: 180,
+              });
+              userMarkerRef.current.addListener('click', () => userIW.open({ anchor: userMarkerRef.current, map }));
+            } else {
+              userMarkerRef.current.position = { lat: latitude, lng: longitude };
+            }
+          },
+          (err) => { if (err.code === 1) window.dispatchEvent(new CustomEvent('geo-denied')); },
+          { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+        );
+      }
+
+      setMapReady(true);
+    }).catch((err) => {
+      console.error('Google Maps failed to load:', err);
+      isInitializingRef.current = false;
     });
-    new LocateControl().addTo(map);
-
-    const fptMarker = L.marker(FPT_COORDS, { icon: createFPTIcon(), zIndexOffset: 1000 }).addTo(map);
-    fptMarker.bindPopup(`
-      <div style="padding:14px 16px;font-family:'Be Vietnam Pro',sans-serif">
-        <div style="font-weight:700;font-size:14px;color:#F05A22;margin-bottom:4px">🎓 Đại học FPT Đà Nẵng</div>
-        <div style="font-size:12px;color:#6B7280">Khu đô thị FPT City, Ngũ Hành Sơn</div>
-        <div style="margin-top:6px;display:inline-flex;align-items:center;gap:4px;background:#FFF3EE;border-radius:20px;padding:2px 8px">
-          <span style="font-size:11px;color:#F05A22;font-weight:500">📍 Trung tâm bán kính 7km</span>
-        </div>
-      </div>
-    `, { maxWidth: 220 });
-
-    L.circle(FPT_COORDS, {
-      radius: MAX_RADIUS_KM * 1000,
-      color: '#F05A22', fillColor: '#F05A22',
-      fillOpacity: 0.03, weight: 1.5, dashArray: '6 4',
-    }).addTo(map);
-
-    mapInstanceRef.current = map;
-
-    if (navigator.geolocation) {
-      geoWatchRef.current = navigator.geolocation.watchPosition(
-        ({ coords: { latitude, longitude } }) => {
-          const coords = [latitude, longitude];
-          userCoordsRef.current = coords;
-          if (!userMarkerRef.current) {
-            userMarkerRef.current = L.marker(coords, { icon: createUserIcon(), zIndexOffset: 900 }).addTo(map);
-            userMarkerRef.current.bindPopup(`
-              <div style="padding:10px 14px;font-family:'Be Vietnam Pro',sans-serif">
-                <div style="display:flex;align-items:center;gap:6px">
-                  <div style="width:10px;height:10px;background:#2563EB;border-radius:50%;flex-shrink:0"></div>
-                  <span style="font-size:13px;font-weight:600;color:#1D4ED8">Vị trí của bạn</span>
-                </div>
-                <div style="font-size:11px;color:#9CA3AF;margin-top:3px">Đang cập nhật theo thời gian thực</div>
-              </div>
-            `, { maxWidth: 180 });
-          } else {
-            userMarkerRef.current.setLatLng(coords);
-          }
-        },
-        (err) => { if (err.code === 1) window.dispatchEvent(new CustomEvent('geo-denied')); },
-        { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
-      );
-    }
 
     return () => {
+      isMounted = false;
       if (geoWatchRef.current != null) navigator.geolocation?.clearWatch(geoWatchRef.current);
-      map.remove();
       mapInstanceRef.current = null;
       userMarkerRef.current = null;
+      isInitializingRef.current = false;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -617,20 +602,28 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
   // ── Sync markers ──────────────────────────────────────────────────────────
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map) return;
-    Object.values(markersRef.current).forEach(m => m.remove());
+    const AME = AdvancedMarkerRef.current;
+    if (!map || !AME || !mapReady) return;
+
+    Object.values(markersRef.current).forEach(m => { m.map = null; });
     markersRef.current = {};
     placesDataRef.current = {};
 
     places.forEach(place => {
       placesDataRef.current[place.id] = place;
       const isPopular = Boolean(place.is_popular);
-      const marker = L.marker(
-        [place.lat, place.lng],
-        { icon: createPlaceIcon(place.type_color, place.type_icon, isPopular), zIndexOffset: isPopular ? 100 : 0 }
-      ).addTo(map);
-      marker.bindPopup(buildPopupHTML(place), { maxWidth: 260, minWidth: 232, className: 'place-popup' });
-      marker.on('click', () => { setSelectedPlace(place); map.flyTo([place.lat, place.lng], 16, { duration: 0.8 }); });
+      const marker = new AME({
+        map, position: { lat: place.lat, lng: place.lng },
+        content: createPlaceMarkerEl(place.type_color, place.type_icon, isPopular),
+        zIndex: isPopular ? 100 : 0, title: place.name,
+      });
+      marker.addListener('click', () => {
+        setSelectedPlace(place);
+        map.panTo({ lat: place.lat, lng: place.lng });
+        map.setZoom(Math.max(map.getZoom(), 16));
+        infoWindowRef.current.setContent(buildPopupHTML(place));
+        infoWindowRef.current.open({ anchor: marker, map });
+      });
       markersRef.current[place.id] = marker;
     });
 
@@ -642,10 +635,10 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
         window.__showRouteToast('Đang xác định vị trí, vui lòng thử lại sau giây lát.', 'warn');
         return;
       }
-      mapInstanceRef.current?.closePopup();
+      infoWindowRef.current?.close();
       window.__fetchRouteGlobal(userCoordsRef.current, [place.lat, place.lng], 'driving', place.name);
     };
-  }, [places, navigate, setSelectedPlace]);
+  }, [places, mapReady, navigate, setSelectedPlace]);
 
   useEffect(() => {
     window.__fetchRouteGlobal = fetchRoute;
@@ -654,13 +647,17 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
 
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map || !selectedPlace) return;
+    if (!map || !mapReady || !selectedPlace) return;
     const marker = markersRef.current[selectedPlace.id];
     if (marker) {
-      map.flyTo([selectedPlace.lat, selectedPlace.lng], 16, { duration: 0.8 });
-      setTimeout(() => marker.openPopup(), 900);
+      map.panTo({ lat: selectedPlace.lat, lng: selectedPlace.lng });
+      map.setZoom(16);
+      setTimeout(() => {
+        infoWindowRef.current.setContent(buildPopupHTML(selectedPlace));
+        infoWindowRef.current.open({ anchor: marker, map });
+      }, 900);
     }
-  }, [selectedPlace]);
+  }, [selectedPlace, mapReady]);
 
   function handlePlaceAdded(newPlace) {
     setAddStep(null);
@@ -668,7 +665,7 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
     if (onPlaceAdded) onPlaceAdded(newPlace);
     showToast(`Đã thêm "${newPlace.name}" lên bản đồ!`, 'success');
     const map = mapInstanceRef.current;
-    if (map) map.flyTo([newPlace.lat, newPlace.lng], 16, { duration: 1 });
+    if (map) { map.panTo({ lat: newPlace.lat, lng: newPlace.lng }); map.setZoom(16); }
   }
 
   function closeAddFlow() {
@@ -683,7 +680,7 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
     <div className="relative w-full h-full" style={{ minHeight: 400 }}>
       <div ref={mapRef} className="w-full h-full" />
 
-      {/* ── FAB: Thêm địa điểm (hiện khi đã đăng nhập) ── */}
+      {/* ── FAB: Thêm địa điểm ── */}
       {user && (
         <button
           onClick={() => setAddStep(s => s === 'picker' ? null : 'picker')}
@@ -702,18 +699,13 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
       {/* ── Option picker popup ── */}
       {addStep === 'picker' && (
         <>
-          {/* Backdrop để đóng picker khi click ngoài */}
           <div className="absolute inset-0 z-[999]" onClick={() => setAddStep(null)} />
-          {/* Menu popup */}
           <div className="absolute bottom-[120px] md:bottom-20 left-5 z-[1001] bg-white rounded-2xl shadow-2xl border border-gray-100 w-64 overflow-hidden animate-scale-in">
             <div className="px-4 pt-3 pb-1">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Chọn cách nhập vị trí</p>
             </div>
-            {/* Option 1: tự nhập tọa độ */}
-            <button
-              onClick={() => { setPickedCoords(null); setAddStep('form'); }}
-              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50 text-left transition-colors group"
-            >
+            <button onClick={() => { setPickedCoords(null); setAddStep('form'); }}
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50 text-left transition-colors group">
               <div className="w-9 h-9 rounded-xl bg-orange-100 group-hover:bg-fpt-orange flex items-center justify-center flex-shrink-0 transition-colors">
                 <PenLine size={16} className="text-fpt-orange group-hover:text-white transition-colors" />
               </div>
@@ -722,11 +714,8 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
                 <div className="text-xs text-gray-400">Điền Lat/Lng thủ công trong form</div>
               </div>
             </button>
-            {/* Option 2: chọn trên bản đồ trước rồi mới điền form */}
-            <button
-              onClick={() => setAddStep('picking')}
-              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 text-left transition-colors group border-t border-gray-50"
-            >
+            <button onClick={() => setAddStep('picking')}
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 text-left transition-colors group border-t border-gray-50">
               <div className="w-9 h-9 rounded-xl bg-blue-100 group-hover:bg-blue-500 flex items-center justify-center flex-shrink-0 transition-colors">
                 <MousePointerClick size={16} className="text-blue-500 group-hover:text-white transition-colors" />
               </div>
@@ -752,15 +741,8 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
       {/* ── Toast ── */}
       {toast && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1100] animate-fade-in-up pointer-events-none">
-          <div
-            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl shadow-lg text-white text-sm font-medium"
-            style={{
-              background: toast.type === 'warn' ? '#D97706'
-                : toast.type === 'success' ? '#059669'
-                : toast.type === 'info' ? '#2563EB'
-                : '#DC2626',
-            }}
-          >
+          <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl shadow-lg text-white text-sm font-medium"
+            style={{ background: toast.type === 'warn' ? '#D97706' : toast.type === 'success' ? '#059669' : toast.type === 'info' ? '#2563EB' : '#DC2626' }}>
             <span className="text-base leading-none">
               {toast.type === 'warn' ? '⚠️' : toast.type === 'success' ? '✅' : toast.type === 'info' ? 'ℹ️' : '❌'}
             </span>
@@ -784,12 +766,8 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
 
       {/* ── Route info panel ── */}
       {routeInfo && !loadingRoute && (
-        <div
-          className="absolute z-[1000] bg-white shadow-2xl overflow-hidden animate-fade-in-up
-            left-3 right-3 bottom-[88px]
-            md:left-auto md:right-auto md:bottom-5 md:rounded-2xl md:-translate-x-1/2 md:left-1/2"
-          style={{ borderRadius: 16, maxWidth: 400 }}
-        >
+        <div className="absolute z-[1000] bg-white shadow-2xl overflow-hidden animate-fade-in-up left-3 right-3 bottom-[88px] md:left-auto md:right-auto md:bottom-5 md:rounded-2xl md:-translate-x-1/2 md:left-1/2"
+          style={{ borderRadius: 16, maxWidth: 400 }}>
           <div style={{ height: 4, background: isDriving ? 'linear-gradient(90deg,#2563EB,#60A5FA)' : 'linear-gradient(90deg,#059669,#34D399)' }} />
           <div className="px-4 pt-3 pb-3">
             <div className="flex items-center gap-2.5 mb-2.5">
@@ -819,8 +797,7 @@ export default function MapView({ isAdmin = false, onPlaceAdded }) {
                 <button onClick={() => switchMode('driving')}
                   className={`flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${isDriving ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-2"/>
-                    <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
+                    <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
                   </svg>Xe
                 </button>
                 <button onClick={() => switchMode('foot')}
