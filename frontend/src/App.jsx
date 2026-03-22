@@ -8,7 +8,7 @@ import AdminPage from './pages/AdminPage';
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <PlaceProvider>
           <div className="min-h-screen bg-gray-50 font-sans">

@@ -2,7 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== Leaflet + Mapbox Overrides ===== */
+/* ===== Leaflet Overrides (Tailwind Preflight compat) ===== */
+/* Tailwind base đặt max-width:100% trên img → Leaflet tile bị sai kích thước */
+.leaflet-container img {
+  max-width: none;
+  display: block;
+}
+.leaflet-control-attribution {
+  display: none !important;
+}
 .leaflet-container {
   font-family: 'Be Vietnam Pro', sans-serif;
 }

@@ -474,19 +474,20 @@ export default function MapView({ onPlaceAdded }) {
       zoomControl: false,
     });
 
-    // VietMap raster tile layer (fallback OSM nếu chưa có key)
-    const hasVietmapKey = VIETMAP_KEY && VIETMAP_KEY.length > 20 && !VIETMAP_KEY.startsWith('YOUR_');
-    if (hasVietmapKey) {
-      L.tileLayer(
-        `https://maps.vietmap.vn/api/raster/v1/{z}/{x}/{y}.png?apikey=${VIETMAP_KEY}`,
-        { attribution: '© <a href="https://vietmap.vn/" target="_blank">VietMap</a>', maxZoom: 20 }
-      ).addTo(map);
-    } else {
-      L.tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        { attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom: 19 }
-      ).addTo(map);
-    }
+    // Fix: gọi invalidateSize sau khi browser hoàn thành layout
+    // để Leaflet tính đúng kích thước container và load tile
+    requestAnimationFrame(() => map.invalidateSize());
+
+    // CartoDB Voyager — miễn phí, không cần key, ổn định toàn cầu
+    // Khi có URL VietMap raster chính xác, thay vào đây
+    L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20,
+      }
+    ).addTo(map);
 
     // Zoom control
     L.control.zoom({ position: 'topleft' }).addTo(map);
@@ -656,8 +657,8 @@ export default function MapView({ onPlaceAdded }) {
   const isDriving = routeInfo?.mode === 'driving';
 
   return (
-    <div className="relative w-full h-full" style={{ minHeight: 400 }}>
-      <div ref={mapContainerRef} className="w-full h-full" />
+    <div className="relative w-full" style={{ height: '100%', minHeight: 400 }}>
+      <div ref={mapContainerRef} style={{ position: 'absolute', inset: 0 }} />
 
       {/* ── FAB: Thêm địa điểm ── */}
       {user && (

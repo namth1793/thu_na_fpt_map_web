@@ -18,7 +18,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="h-14 bg-white border-b border-gray-100 flex items-center px-4 z-30 relative" style={{ boxShadow: '0 1px 0 #f3f4f6, 0 2px 8px rgba(0,0,0,0.04)' }}>
+      <nav className="h-14 bg-white border-b border-gray-100 flex items-center px-4 z-[1500] relative" style={{ boxShadow: '0 1px 0 #f3f4f6, 0 2px 8px rgba(0,0,0,0.04)' }}>
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 mr-auto group">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0 transition-transform group-hover:scale-105"
