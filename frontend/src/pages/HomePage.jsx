@@ -40,7 +40,7 @@ export default function HomePage() {
         {/* Toggle sidebar - desktop only */}
         <button
           onClick={() => setShowSidebar(s => !s)}
-          className="hidden md:flex absolute top-3 left-3 z-20 bg-white shadow-md rounded-full w-8 h-8 items-center justify-center hover:bg-gray-50 text-gray-600 transition-colors text-sm"
+          className="hidden md:flex absolute top-3 left-3 z-[900] bg-white shadow-md rounded-full w-8 h-8 items-center justify-center hover:bg-gray-50 text-gray-600 transition-colors text-sm"
           title={showSidebar ? 'Ẩn danh sách' : 'Hiện danh sách'}
         >
           {showSidebar ? '◀' : '▶'}
@@ -49,7 +49,7 @@ export default function HomePage() {
         {/* Spin wheel FAB - desktop only */}
         <button
           onClick={() => setShowSpinWheel(true)}
-          className="hidden md:flex absolute bottom-8 right-5 z-20 bg-gradient-to-r from-fpt-orange to-pink-500 text-white rounded-full px-5 py-3 shadow-xl hover:shadow-2xl transition-all items-center gap-2 font-semibold text-sm animate-float"
+          className="hidden md:flex absolute bottom-8 right-5 z-[900] bg-gradient-to-r from-fpt-orange to-pink-500 text-white rounded-full px-5 py-3 shadow-xl hover:shadow-2xl transition-all items-center gap-2 font-semibold text-sm animate-float"
         >
           <Shuffle size={18} />
           <span>Random chỗ chơi!</span>
@@ -57,7 +57,7 @@ export default function HomePage() {
       </div>
 
       {/* Mobile bottom nav */}
-      <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+      <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-[900] flex gap-2">
         <button
           onClick={() => setMobileView('map')}
           className={`px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 text-sm font-semibold transition-all ${

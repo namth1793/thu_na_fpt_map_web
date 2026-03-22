@@ -474,14 +474,19 @@ export default function MapView({ onPlaceAdded }) {
       zoomControl: false,
     });
 
-    // VietMap raster tile layer
-    L.tileLayer(
-      `https://maps.vietmap.vn/api/raster/v1/{z}/{x}/{y}.png?apikey=${VIETMAP_KEY}`,
-      {
-        attribution: '© <a href="https://vietmap.vn/" target="_blank">VietMap</a>',
-        maxZoom: 20,
-      }
-    ).addTo(map);
+    // VietMap raster tile layer (fallback OSM nếu chưa có key)
+    const hasVietmapKey = VIETMAP_KEY && VIETMAP_KEY.length > 20 && !VIETMAP_KEY.startsWith('YOUR_');
+    if (hasVietmapKey) {
+      L.tileLayer(
+        `https://maps.vietmap.vn/api/raster/v1/{z}/{x}/{y}.png?apikey=${VIETMAP_KEY}`,
+        { attribution: '© <a href="https://vietmap.vn/" target="_blank">VietMap</a>', maxZoom: 20 }
+      ).addTo(map);
+    } else {
+      L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        { attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom: 19 }
+      ).addTo(map);
+    }
 
     // Zoom control
     L.control.zoom({ position: 'topright' }).addTo(map);
