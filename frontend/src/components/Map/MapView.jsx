@@ -8,7 +8,8 @@ import { useAuth } from '../../context/AuthContext';
 import { placesAPI } from '../../utils/api';
 import { FPT_COORDS, MAX_RADIUS_KM, formatDistance } from '../../utils/distance';
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
+const VIETMAP_KEY = import.meta.env.VITE_VIETMAP_API_KEY || '';
+const VIETMAP_SERVICE_KEY = import.meta.env.VITE_VIETMAP_SERVICE_KEY || '';
 
 const PLACE_TYPES = [
   { id: 1, name: 'Sống ảo / Check-in', icon: '📸' },
@@ -370,13 +371,14 @@ export default function MapView({ onPlaceAdded }) {
     try {
       const [uLat, uLng] = userCoords;
       const [pLat, pLng] = placeCoords;
-      const url = `https://router.project-osrm.org/route/v1/${mode}/${uLng},${uLat};${pLng},${pLat}?overview=full&geometries=geojson`;
+      const vehicle = mode === 'driving' ? 'car' : 'foot';
+      const url = `https://maps.vietmap.vn/api/route?api-version=1.1&apikey=${VIETMAP_SERVICE_KEY}&point=${uLat},${uLng}&point=${pLat},${pLng}&vehicle=${vehicle}&points_encoded=false`;
       const res = await fetch(url);
-      if (!res.ok) throw new Error('OSRM error');
+      if (!res.ok) throw new Error('VietMap routing error');
       const data = await res.json();
-      if (!data.routes?.length) throw new Error('No route');
-      const route = data.routes[0];
-      const path = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+      if (!data.paths?.length) throw new Error('No route');
+      const route = data.paths[0];
+      const path = route.points.coordinates.map(([lng, lat]) => [lat, lng]);
       const isDriving = mode === 'driving';
       const polyline = isDriving
         ? L.polyline(path, { color: '#2563EB', weight: 5, opacity: 0.85 })
@@ -384,7 +386,7 @@ export default function MapView({ onPlaceAdded }) {
       polyline.addTo(map);
       routeLayerRef.current = polyline;
       map.fitBounds(L.latLngBounds(path), { padding: [70, 70] });
-      setRouteInfo({ distance: route.distance, duration: route.duration, mode, placeName, placeCoords });
+      setRouteInfo({ distance: route.distance, duration: route.time / 1000, mode, placeName, placeCoords });
     } catch {
       showToast('Không thể tải tuyến đường. Vui lòng thử lại sau.');
     } finally {
@@ -462,7 +464,7 @@ export default function MapView({ onPlaceAdded }) {
     }
   }, [showAddModal]);
 
-  // ── Init Leaflet + Mapbox ─────────────────────────────────────────────────
+  // ── Init Leaflet + VietMap ────────────────────────────────────────────────
   useEffect(() => {
     if (mapInstanceRef.current) return;
 
@@ -472,13 +474,11 @@ export default function MapView({ onPlaceAdded }) {
       zoomControl: false,
     });
 
-    // Mapbox Streets tile layer
+    // VietMap raster tile layer
     L.tileLayer(
-      `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}@2x?access_token=${MAPBOX_TOKEN}`,
+      `https://maps.vietmap.vn/api/raster/v1/{z}/{x}/{y}.png?apikey=${VIETMAP_KEY}`,
       {
-        attribution: '© <a href="https://www.mapbox.com/" target="_blank">Mapbox</a> © <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a>',
-        tileSize: 512,
-        zoomOffset: -1,
+        attribution: '© <a href="https://vietmap.vn/" target="_blank">VietMap</a>',
         maxZoom: 20,
       }
     ).addTo(map);
