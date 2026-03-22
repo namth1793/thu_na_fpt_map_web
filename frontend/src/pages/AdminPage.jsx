@@ -410,12 +410,12 @@ export default function AdminPage() {
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Vĩ độ (Lat) *</label>
                     <input type="number" step="any" value={form.lat} onChange={e => setForm(f => ({ ...f, lat: e.target.value }))}
-                      placeholder="15.9697" className={inputCls} required />
+                      placeholder="15.9765" className={inputCls} required />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Kinh độ (Lng) *</label>
                     <input type="number" step="any" value={form.lng} onChange={e => setForm(f => ({ ...f, lng: e.target.value }))}
-                      placeholder="108.2603" className={inputCls} required />
+                      placeholder="108.2634" className={inputCls} required />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Địa chỉ</label>

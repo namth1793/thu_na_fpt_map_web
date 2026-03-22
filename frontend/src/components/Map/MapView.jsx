@@ -256,9 +256,9 @@ function AddPlaceModal({ placeTypes, onClose, onSuccess, onPreviewCoords, onPick
             </div>
             <div className="grid grid-cols-2 gap-2">
               <input value={form.lat} onChange={e => setForm(f => ({ ...f, lat: e.target.value }))}
-                placeholder="Lat: 15.9697" className={inputCls} />
+                placeholder="Lat: 15.9765" className={inputCls} />
               <input value={form.lng} onChange={e => setForm(f => ({ ...f, lng: e.target.value }))}
-                placeholder="Lng: 108.2603" className={inputCls} />
+                placeholder="Lng: 108.2634" className={inputCls} />
             </div>
             {coordsValid && (
               <p className="text-xs text-emerald-600 mt-1 font-medium">✓ Tọa độ hợp lệ</p>
@@ -489,7 +489,7 @@ export default function MapView({ onPlaceAdded }) {
     }
 
     // Zoom control
-    L.control.zoom({ position: 'topright' }).addTo(map);
+    L.control.zoom({ position: 'topleft' }).addTo(map);
 
     // Custom locate button
     const LocateControl = L.Control.extend({
@@ -512,7 +512,7 @@ export default function MapView({ onPlaceAdded }) {
       },
       onRemove() {},
     });
-    new LocateControl({ position: 'topright' }).addTo(map);
+    new LocateControl({ position: 'topleft' }).addTo(map);
 
     // FPT marker
     const fptIcon = L.divIcon({ html: createFPTMarkerEl(), className: '', iconSize: [48, 48], iconAnchor: [24, 24] });
