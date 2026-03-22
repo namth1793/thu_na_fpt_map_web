@@ -115,11 +115,14 @@ function initDB() {
     );
   `);
 
-  // Seed places luôn chạy (INSERT OR IGNORE) để thêm địa điểm mới khi redeploy mà không mất data cũ
+  // Kiểm tra TRƯỚC khi seedPlaces chạy (seedPlaces insert types → count sẽ > 0 sau đó)
+  const isNewDB = database.prepare('SELECT COUNT(*) as count FROM place_types').get().count === 0;
+
+  // Seed places luôn chạy (INSERT OR IGNORE) — an toàn khi redeploy
   seedPlaces(database);
 
-  const typeCount = database.prepare('SELECT COUNT(*) as count FROM place_types').get();
-  if (typeCount.count === 0) {
+  // seedBootstrap chỉ chạy một lần khi DB hoàn toàn mới
+  if (isNewDB) {
     seedBootstrap(database);
   }
 
@@ -205,6 +208,67 @@ function seedBootstrap(database) {
 
   reviews.forEach(r => insertReview.run(...r));
   [1, 2, 3, 5, 7, 9, 11, 13, 14].forEach(id => updatePlaceRating(database, id));
+
+  // Ảnh thực tế từ Unsplash cho từng địa điểm
+  const insertImage = database.prepare(
+    'INSERT INTO place_images (place_id, image_url) VALUES (?, ?)'
+  );
+  const images = [
+    // 1 - Bãi biển Non Nước
+    [1, 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80'],
+    [1, 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800&q=80'],
+    // 2 - Ngũ Hành Sơn (marble mountains / cave)
+    [2, 'https://images.unsplash.com/photo-1601933470096-0e34634ffcde?w=800&q=80'],
+    [2, 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=800&q=80'],
+    // 3 - Làng Đá Mỹ Nghệ (stone craft / artisan)
+    [3, 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80'],
+    [3, 'https://images.unsplash.com/photo-1580428456289-31892d0c5af6?w=800&q=80'],
+    // 4 - Thế Giới Di Động (electronics store)
+    [4, 'https://images.unsplash.com/photo-1491933382434-500287f9b54b?w=800&q=80'],
+    [4, 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80'],
+    // 5 - Aha Coffee
+    [5, 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80'],
+    [5, 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80'],
+    // 6 - Pharmacity
+    [6, 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&q=80'],
+    // 7 - Nốt Coffee
+    [7, 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80'],
+    [7, 'https://images.unsplash.com/photo-1512568400610-62da28bc8a13?w=800&q=80'],
+    // 8 - Trees Tea & Coffee
+    [8, 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&q=80'],
+    [8, 'https://images.unsplash.com/photo-1558618047-f87c7f38c946?w=800&q=80'],
+    // 9 - Sân Bóng FPT Complex
+    [9, 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80'],
+    [9, 'https://images.unsplash.com/photo-1516132006923-6cf348e5dee2?w=800&q=80'],
+    // 10 - Sân Cầu Lông Indexsport 2
+    [10, 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&q=80'],
+    [10, 'https://images.unsplash.com/photo-1519926886-8a0ace85fb48?w=800&q=80'],
+    // 11 - HD Fitness Center
+    [11, 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80'],
+    [11, 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&q=80'],
+    // 12 - Bách Hóa Xanh
+    [12, 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80'],
+    [12, 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=800&q=80'],
+    // 13 - Karaoke Idol
+    [13, 'https://images.unsplash.com/photo-1570737209810-b73e14d6b4c2?w=800&q=80'],
+    [13, 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800&q=80'],
+    // 14 - Bún Bò Mệ Hoa
+    [14, 'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=800&q=80'],
+    [14, 'https://images.unsplash.com/photo-1555126634-323283e090fa?w=800&q=80'],
+    // 15 - Cơm Tấm Đà Nẵng
+    [15, 'https://images.unsplash.com/photo-1562802378-063ec186a863?w=800&q=80'],
+    [15, 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&q=80'],
+    // 16 - Lẩu Kichi Kichi (hot pot)
+    [16, 'https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=800&q=80'],
+    [16, 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&q=80'],
+    // 17 - Fun World (entertainment / bowling)
+    [17, 'https://images.unsplash.com/photo-1566647387313-9fda80664848?w=800&q=80'],
+    [17, 'https://images.unsplash.com/photo-1511882150382-421056c89033?w=800&q=80'],
+    // 18 - Galaxy Cinema
+    [18, 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800&q=80'],
+    [18, 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&q=80'],
+  ];
+  images.forEach(([placeId, url]) => insertImage.run(placeId, url));
 
   console.log('Dữ liệu mẫu đã được tạo!');
 }
