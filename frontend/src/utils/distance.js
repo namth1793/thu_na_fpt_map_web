@@ -1,5 +1,5 @@
-export const FPT_LAT = 15.9697;
-export const FPT_LNG = 108.2603;
+export const FPT_LAT = 15.9765;
+export const FPT_LNG = 108.2634;
 export const FPT_COORDS = [FPT_LAT, FPT_LNG];
 export const MAX_RADIUS_KM = 7;
 

@@ -514,7 +514,7 @@ export default function MapView({ onPlaceAdded }) {
     const fptMarker = L.marker([FPT_COORDS[0], FPT_COORDS[1]], { icon: fptIcon, zIndexOffset: 1000, title: 'Đại học FPT Đà Nẵng' }).addTo(map);
     fptMarker.bindPopup(
       `<div style="padding:14px 16px;font-family:'Be Vietnam Pro',sans-serif"><div style="font-weight:700;font-size:14px;color:#F05A22;margin-bottom:4px">🎓 Đại học FPT Đà Nẵng</div><div style="font-size:12px;color:#6B7280">Khu đô thị FPT City, Ngũ Hành Sơn</div><div style="margin-top:6px;display:inline-flex;align-items:center;gap:4px;background:#FFF3EE;border-radius:20px;padding:2px 8px"><span style="font-size:11px;color:#F05A22;font-weight:500">📍 Trung tâm bán kính 7km</span></div></div>`,
-      { maxWidth: 220, className: 'place-popup' }
+      { maxWidth: 280, className: 'place-popup' }
     );
 
     // Radius circle
