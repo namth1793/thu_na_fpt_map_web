@@ -6,8 +6,8 @@ const { getUploadedUrl } = require('../middleware/upload');
 
 const router = express.Router();
 
-const FPT_LAT = 15.9697;
-const FPT_LNG = 108.2603;
+const FPT_LAT = 15.969154069923679;
+const FPT_LNG = 108.26092348315012;
 const MAX_RADIUS_KM = 7;
 
 function haversineDistance(lat1, lng1, lat2, lng2) {

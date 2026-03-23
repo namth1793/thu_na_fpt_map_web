@@ -126,7 +126,7 @@ function initDB() {
   console.log('Database khởi tạo thành công!');
 }
 
-// FPT Đà Nẵng: 15.9697, 108.2603 (Khu đô thị FPT City, Ngũ Hành Sơn)
+// FPT Đà Nẵng: 15.969154069923679, 108.26092348315012 (Trường ĐH FPT Đà Nẵng, Ngũ Hành Sơn)
 function seedPlaces(database) {
   const insertType = database.prepare(
     'INSERT OR IGNORE INTO place_types (id, name, slug, color, icon) VALUES (?, ?, ?, ?, ?)'
