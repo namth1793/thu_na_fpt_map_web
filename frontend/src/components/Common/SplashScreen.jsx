@@ -1,4 +1,4 @@
-import bannerImg from '../../assets/banner.jpg';
+import bannerImg from '../../../assets/banner.jpg';
 
 export default function SplashScreen({ onStart }) {
   return (
